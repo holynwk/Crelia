@@ -1072,10 +1072,10 @@ index ce6b57eeeeb1bd652f4bb53c19dcfbc05126c7e9..36aabbd42cd89f8894c400bf6d26e181
                      entity.isTemporarilyActive = true;
                  }
 diff --git a/io/papermc/paper/redstone/RedstoneWireTurbo.java b/io/papermc/paper/redstone/RedstoneWireTurbo.java
-index ff747a1ecdf3c888bca0d69de4f85dcd810b6139..5a76c93eada8db35b1ddbb562ccfbd2f0d35f0ca 100644
+index 8e03419df1469c6fecfaa82fcb319a58635b39f3..b3c466fd7cb6810995f95bed66a86f2b5825a8df 100644
 --- a/io/papermc/paper/redstone/RedstoneWireTurbo.java
 +++ b/io/papermc/paper/redstone/RedstoneWireTurbo.java
-@@ -829,14 +829,14 @@ public final class RedstoneWireTurbo {
+@@ -827,14 +827,14 @@ public final class RedstoneWireTurbo {
          j = getMaxCurrentStrength(upd, j);
          int l = 0;
  
@@ -13552,7 +13552,7 @@ index 5b779bd2a5d836bebbc31718df6e9c735f12e41e..4924915ec3adf4d68ca537518fdffa52
  
      public final boolean isDisconnected() {
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 72bf241ee7ebd02781b539a24c1df8e7f62fb94d..f224d6348d28c237b1f99f812b2f0e01b88d5c7c 100644
+index 3a0d47a716ce5c5345640ed67ac306101791892b..282fae3104687119cb9e9502bcb3d211950e4571 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -92,7 +92,13 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
@@ -13569,7 +13569,7 @@ index 72bf241ee7ebd02781b539a24c1df8e7f62fb94d..f224d6348d28c237b1f99f812b2f0e01
          }
  
          if (this.state == ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT
-@@ -214,7 +220,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -212,7 +218,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
  
      private void verifyLoginAndFinishConnectionSetup(final GameProfile profile) {
          PlayerList playerList = this.server.getPlayerList();
@@ -13578,7 +13578,7 @@ index 72bf241ee7ebd02781b539a24c1df8e7f62fb94d..f224d6348d28c237b1f99f812b2f0e01
          if (error != null) {
              this.disconnectAsync(error); // Paper
          } else {
-@@ -226,7 +232,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -224,7 +230,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                      );
              }
  
@@ -13587,7 +13587,7 @@ index 72bf241ee7ebd02781b539a24c1df8e7f62fb94d..f224d6348d28c237b1f99f812b2f0e01
              if (waitForDisconnection) {
                  this.state = ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT;
              } else {
-@@ -344,7 +350,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -342,7 +348,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          uniqueId = gameprofile.id();
          // Paper end - Add more fields to AsyncPlayerPreLoginEvent
  
@@ -13597,7 +13597,7 @@ index 72bf241ee7ebd02781b539a24c1df8e7f62fb94d..f224d6348d28c237b1f99f812b2f0e01
              if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
                  event.disallow(asyncEvent.getResult(), asyncEvent.kickMessage()); // Paper - Adventure
 diff --git a/net/minecraft/server/network/config/PrepareSpawnTask.java b/net/minecraft/server/network/config/PrepareSpawnTask.java
-index 1fb40837bd02672850ec9adc2797190df22b33fc..a7f0cc98e65f79ab1f5a170aade9173d6adeef3e 100644
+index 8b318dd8aa918284c5fa89e990b13bec425102cb..475751ccb4dfcd1f2022b9883ce5cb7a30841f88 100644
 --- a/net/minecraft/server/network/config/PrepareSpawnTask.java
 +++ b/net/minecraft/server/network/config/PrepareSpawnTask.java
 @@ -105,10 +105,24 @@ public class PrepareSpawnTask implements ConfigurationTask {
@@ -15610,7 +15610,7 @@ index 6aef14a04986c20d2f48fb42d33cc73501770ec1..a8d90b112815a004a32f3afaa419f371
          final UUIDLookup<? extends UniquelyIdentifyable> uuidLookup,
          final Class<StoredEntityType> entityClass
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 6a0ebbdfcc0bc07915574c1cf87463e82213ca7e..f1db892a9d6a27889e983eae3e4c029b8c44315c 100644
+index 36c0081e3e8f8776293ae619156cd0828fe5b21d..201bcd06b965e2e92758a1066f1c4a0cf187b26a 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -264,7 +264,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -15709,7 +15709,7 @@ index 6a0ebbdfcc0bc07915574c1cf87463e82213ca7e..f1db892a9d6a27889e983eae3e4c029b
              this.lastDamageSource = null;
          }
  
-@@ -2608,10 +2631,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2595,10 +2618,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      public @Nullable LivingEntity getKillCredit() {
@@ -15722,7 +15722,7 @@ index 6a0ebbdfcc0bc07915574c1cf87463e82213ca7e..f1db892a9d6a27889e983eae3e4c029b
          }
      }
  
-@@ -2697,7 +2720,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -2684,7 +2707,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
  
          this.lastDamageSource = source;
@@ -15731,7 +15731,7 @@ index 6a0ebbdfcc0bc07915574c1cf87463e82213ca7e..f1db892a9d6a27889e983eae3e4c029b
      }
  
      @Override
-@@ -3806,7 +3829,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3798,7 +3821,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.pushEntities();
          profiler.pop();
          // Paper start - Add EntityMoveEvent
@@ -15740,7 +15740,7 @@ index 6a0ebbdfcc0bc07915574c1cf87463e82213ca7e..f1db892a9d6a27889e983eae3e4c029b
              if (this.xo != this.getX() || this.yo != this.getY() || this.zo != this.getZ() || this.yRotO != this.getYRot() || this.xRotO != this.getXRot()) {
                  Location from = new Location(this.level().getWorld(), this.xo, this.yo, this.zo, this.yRotO, this.xRotO);
                  Location to = new Location(this.level().getWorld(), this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-@@ -4506,7 +4529,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4498,7 +4521,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          boolean ok = false;
          BlockPos pos = BlockPos.containing(xx, yy, zz);
          Level level = this.level();
@@ -15749,7 +15749,7 @@ index 6a0ebbdfcc0bc07915574c1cf87463e82213ca7e..f1db892a9d6a27889e983eae3e4c029b
              boolean landed = false;
  
              while (!landed && pos.getY() > level.getMinY()) {
-@@ -4668,6 +4691,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4660,6 +4683,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  this.setXRot(0.0F);
              }
          });
@@ -16538,7 +16538,7 @@ index b107f47d289aa32a37365163667270a98df19162..1525deaabaf7f8cbe5566f014ca4be6a
              return true;
          } else if (this.random.nextInt(10) != 0) {
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index b8c40b7e9a52211181bcd3d8e8c6041b6319d727..1c8a3867bfd11d45fd63512f83e0810cc855925d 100644
+index 391f3048f34edfa3d5759abfd56e17d5b5318309..4b57e9024f66810510886f8115d42007e374ee27 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -1363,6 +1363,14 @@ public abstract class Player extends Avatar implements ContainerUser {
@@ -17145,14 +17145,14 @@ index 06ab7c48b18c03af494ab10fc2b584cefc776749..46492995dc0744c400c7ba1869f4eeff
      // Paper end
  
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 610c5dc3a7227bb45fc328cb4f42047743f10123..b3bdf11cf2b65a5d5cc40e95271daa1b0ec90613 100644
+index e58fa32f0d93dd6b5243937cb380e8dbaa198e17..b3bdf11cf2b65a5d5cc40e95271daa1b0ec90613 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -716,7 +716,7 @@ public abstract class AbstractContainerMenu {
      }
  
      private static void dropOrPlaceInInventory(final Player player, final ItemStack carried) {
--        boolean playerRemovedNotChangingDimension = player.isRemoved() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION;
+-        boolean playerRemovedNotChangingDimension = !player.isAlive() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION; // Paper - Make sure player is dead (https://github.com/PaperMC/Paper/pull/13002)
 +        boolean playerRemovedNotChangingDimension = (player.getHealth() <= 0.0f) || (player.isRemoved() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION); // Folia - region threading
          boolean serverPlayerHasDisconnected = player instanceof ServerPlayer serverPlayer && serverPlayer.hasDisconnected();
          if (playerRemovedNotChangingDimension || serverPlayerHasDisconnected) {
@@ -18065,7 +18065,7 @@ index 41aab9a526be77b400bed7a74614eceec95345b5..0cdd88e530c660b65f3eb331b37cbd2c
                  level.addFreshEntity(entity);
              }
 diff --git a/net/minecraft/world/level/block/DaylightDetectorBlock.java b/net/minecraft/world/level/block/DaylightDetectorBlock.java
-index 498372942f95c07c51217bc7645f8da7a69a854e..37e1ed8c3330a662eaa9a81ad477308e908ee05f 100644
+index a6e1f0c619681dd9abb3b0a094126453a2a17810..a00de74e9bdd7089a101e85ec3d43dd41ecc3b79 100644
 --- a/net/minecraft/world/level/block/DaylightDetectorBlock.java
 +++ b/net/minecraft/world/level/block/DaylightDetectorBlock.java
 @@ -111,7 +111,7 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
@@ -18205,10 +18205,10 @@ index e517f58719607cb98043872415c8c423c8f85faa..5e8687f517c85c5701788850351681a6
          }
      }
 diff --git a/net/minecraft/world/level/block/LightningRodBlock.java b/net/minecraft/world/level/block/LightningRodBlock.java
-index 73d0c4e514789b4967f40f63c83e96e1ebd0de43..db58603dede25a0cd20ee3152febafb735408afe 100644
+index 8399256a819bf70a0a943c404c82dbbbbea9267c..47ca45518df306cc4368983eefb89294e56b015a 100644
 --- a/net/minecraft/world/level/block/LightningRodBlock.java
 +++ b/net/minecraft/world/level/block/LightningRodBlock.java
-@@ -115,7 +115,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
+@@ -117,7 +117,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
      @Override
      public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
          if (level.isThundering()
@@ -18326,7 +18326,7 @@ index 01a43dced9a562608bf48a1d60c0208887a5801e..e01f53ef0a63a96024ff8448154a6450
          return Portal.Transition.NONE;
      }
 diff --git a/net/minecraft/world/level/block/RedStoneWireBlock.java b/net/minecraft/world/level/block/RedStoneWireBlock.java
-index ed471efa3ab705de62aec81c3940c1b9c5acdbc5..44f1083190b3a7a4642abb964e034a639725c82d 100644
+index 1e863e97bd1dc99ed6e2c0602f78f457ac618965..4f6205c6d75f195cafb756adbcaee683c7d6761b 100644
 --- a/net/minecraft/world/level/block/RedStoneWireBlock.java
 +++ b/net/minecraft/world/level/block/RedStoneWireBlock.java
 @@ -65,7 +65,7 @@ public class RedStoneWireBlock extends Block {
@@ -18359,7 +18359,7 @@ index ed471efa3ab705de62aec81c3940c1b9c5acdbc5..44f1083190b3a7a4642abb964e034a63
              return;
          }
          updatePowerStrength(worldIn, pos, state, orientation, blockAdded);
-@@ -315,7 +320,7 @@ public class RedStoneWireBlock extends Block {
+@@ -311,7 +316,7 @@ public class RedStoneWireBlock extends Block {
                  // [Space Walker] suppress shape updates and emit those manually to
                  // bypass the new neighbor update stack.
                  if (level.setBlock(pos, state, Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_CLIENTS)) {
@@ -18368,7 +18368,7 @@ index ed471efa3ab705de62aec81c3940c1b9c5acdbc5..44f1083190b3a7a4642abb964e034a63
                  }
              }
          }
-@@ -338,9 +343,9 @@ public class RedStoneWireBlock extends Block {
+@@ -334,9 +339,9 @@ public class RedStoneWireBlock extends Block {
      }
  
      public int getBlockSignal(final Level level, final BlockPos pos) {
@@ -18380,7 +18380,7 @@ index ed471efa3ab705de62aec81c3940c1b9c5acdbc5..44f1083190b3a7a4642abb964e034a63
          return blockSignal;
      }
  
-@@ -434,12 +439,12 @@ public class RedStoneWireBlock extends Block {
+@@ -430,12 +435,12 @@ public class RedStoneWireBlock extends Block {
  
      @Override
      protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
@@ -18395,7 +18395,7 @@ index ed471efa3ab705de62aec81c3940c1b9c5acdbc5..44f1083190b3a7a4642abb964e034a63
              int power = state.getValue(POWER);
              if (power == 0) {
                  return Redstone.SIGNAL_MIN;
-@@ -471,7 +476,10 @@ public class RedStoneWireBlock extends Block {
+@@ -467,7 +472,10 @@ public class RedStoneWireBlock extends Block {
  
      @Override
      protected boolean isSignalSource(final BlockState state) {
@@ -18408,7 +18408,7 @@ index ed471efa3ab705de62aec81c3940c1b9c5acdbc5..44f1083190b3a7a4642abb964e034a63
  
      public static int getColorForPower(final int power) {
 diff --git a/net/minecraft/world/level/block/RedstoneTorchBlock.java b/net/minecraft/world/level/block/RedstoneTorchBlock.java
-index e4d829fa6fa97b53f10c5a6ed1b39c38f94bb5d0..05697cb4cf90ed530b2b5cfc7b35646696a77357 100644
+index 9d4e3511e5a3fbd9b5160c3a85a80420b2db560c..0d0b5443c5c56825e88fd64c02c993eca6044d45 100644
 --- a/net/minecraft/world/level/block/RedstoneTorchBlock.java
 +++ b/net/minecraft/world/level/block/RedstoneTorchBlock.java
 @@ -74,10 +74,10 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
@@ -18424,7 +18424,7 @@ index e4d829fa6fa97b53f10c5a6ed1b39c38f94bb5d0..05697cb4cf90ed530b2b5cfc7b356466
                  toggles.poll();
              }
          }
-@@ -155,13 +155,13 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
+@@ -142,13 +142,13 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
  
      private static boolean isToggledTooFrequently(final Level level, final BlockPos pos, final boolean add) {
          // Paper start - Faster redstone torch rapid clock removal
@@ -18441,7 +18441,7 @@ index e4d829fa6fa97b53f10c5a6ed1b39c38f94bb5d0..05697cb4cf90ed530b2b5cfc7b356466
          }
  
          int count = 0;
-@@ -182,12 +182,18 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
+@@ -169,12 +169,18 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
      }
  
      public static class Toggle {
