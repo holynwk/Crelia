@@ -14,14 +14,14 @@ Crelia 基于 [Folia](https://github.com/PaperMC/Folia) 开发。
 初衷是为了使机械动力服务器利用folia的多核心方案以缓解卡顿。
 ## 当前状态
 
-- 以folia作为基础叠加neoforge功能，理论上性能十分接近folia
+- 以folia作为基础叠加neoforge功能，理论上性能十分接近folia。理论上！
 - 适配中，目前大多模组都会与其不兼容
 
 ## 为什么是26.1.2
 - 我喜欢使用最新的版本，我本以为等我融合好folia与neoforge之后，机械动力就已经发布26.x版本了，但我没想到我的进展这么快
 
 
-### 构建独立 JAR
+### 12345678
 
 - folia怎么来他就怎么来
 - 构建出来是一个服务端核心jar
