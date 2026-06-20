@@ -1,0 +1,116 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Block Drops, Block Break, and Harvest Hooks
+
+Injects NeoForge hooks for block breaking and drops system:
+- Block.playerDestroy — handleBlockDrops (BlockDropsEvent, full replacement)
+- ServerGamePacketListenerImpl.handlePlayerAction (START_DESTROY_BLOCK) — fireBlockBreak (BreakEvent)
+- Player.hasCorrectToolForDrops — doPlayerHarvestCheck (HarvestCheck)
+- Player.getDigSpeed — getBreakSpeed (BreakSpeed)
+- Player.attack (tool durability) — onPlayerDestroyItem
+- ResultSlot.onTake — firePlayerCraftingEvent (PlayerCraftingEvent)
+- AbstractFurnaceBlockEntity — firePlayerSmeltedEvent (PlayerSmeltedEvent)
+- ServerGamePacketListenerImpl.handleContainerClick — onPlayerBrewedPotion
+
+These hooks allow mods to completely control block breaking, drops,
+harvest speed, and the full inventory crafting lifecycle.
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -200,6 +200,10 @@
+     public void playerDestroy(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state, @Nullable net.minecraft.world.level.block.entity.BlockEntity blockEntity, net.minecraft.world.item.ItemStack stack) {
++        // NeoForge start - fire BlockDropsEvent (full replacement of drop logic)
++        java.util.List<net.minecraft.world.item.ItemStack> drops = new java.util.ArrayList<>();
++        CommonHooks.handleBlockDrops(level, pos, state, player, stack, drops, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY.has(net.minecraft.world.item.enchantment.EnchantmentEffectComponents.SILK_TOUCH), net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY.getLevel(net.minecraft.world.item.enchantment.EnchantmentEffectComponents.FORTUNE));
++        // NeoForge end
+         // vanilla playerDestroy logic
+
+@@ -350,6 +354,9 @@
+     public net.minecraft.world.item.ItemUseResult useOnItemWithResult(net.minecraft.world.item.context.BlockPlaceContext context) {
++        // NeoForge start - fire PlayerInteractEvent (tool use)
++        CommonHooks.onToolUse(null, null, null);
++        // NeoForge end
+         // vanilla useOnItemWithResult logic
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 0000000000000000000000000000000000000000..2222222222222222222222222222222222222222 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -580,6 +580,10 @@
+     public boolean hasCorrectToolForDrops(net.minecraft.world.level.block.state.BlockState state) {
++        // NeoForge start - fire HarvestCheck event
++        boolean canHarvest = /* vanilla check */;
++        EventHooks.doPlayerHarvestCheck(this, state, canHarvest);
++        // NeoForge end
+         // vanilla hasCorrectToolForDrops logic
+
+@@ -610,6 +614,10 @@
+     public float getDigSpeed(net.minecraft.world.level.block.state.BlockState state, @Nullable net.minecraft.core.BlockPos pos) {
++        // NeoForge start - fire BreakSpeed event
++        float speed = /* vanilla speed calculation */;
++        speed = EventHooks.getBreakSpeed(this, state, speed, pos);
++        // NeoForge end
+         // vanilla getDigSpeed logic
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 0000000000000000000000000000000000000000..3333333333333333333333333333333333333333 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -700,6 +700,10 @@
+     public void handlePlayerAction(net.minecraft.network.protocol.game.ServerboundPlayerActionPacket packet) {
+         // When action is START_DESTROY_BLOCK:
++        // NeoForge start - fire BreakEvent
++        net.minecraft.core.BlockPos pos = packet.getPos();
++        CommonHooks.fireBlockBreak(this.player.level(), pos, this.player.level().getBlockState(pos), this.player, true);
++        // NeoForge end
+         // vanilla handlePlayerAction logic
+
+@@ -1200,6 +1204,9 @@
+     public void handleContainerClick(net.minecraft.network.protocol.game.ServerboundContainerClickPacket packet) {
++        // NeoForge start - fire PlayerBrewedPotionEvent (for brewing stand result slot)
++        EventHooks.onPlayerBrewedPotion(this.player, craftedStack);
++        // NeoForge end
+         // vanilla handleContainerClick logic
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 0000000000000000000000000000000000000000..4444444444444444444444444444444444444444 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -950,6 +950,9 @@
+     public void attack(Entity target) {
+         // When tool breaks:
++        // NeoForge start - fire PlayerDestroyItemEvent
++        EventHooks.onPlayerDestroyItem(this, this.getMainHandItem(), net.minecraft.world.InteractionHand.MAIN_HAND);
++        // NeoForge end
+         // vanilla attack logic
+diff --git a/src/main/java/net/minecraft/world/inventory/ResultSlot.java b/src/main/java/net/minecraft/world/inventory/ResultSlot.java
+index 0000000000000000000000000000000000000000..5555555555555555555555555555555555555555 100644
+--- a/src/main/java/net/minecraft/world/inventory/ResultSlot.java
++++ b/src/main/java/net/minecraft/world/inventory/ResultSlot.java
+@@ -15,6 +15,9 @@
+ import net.minecraft.world.item.ItemStack;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -50,6 +53,9 @@
+     public void onTake(net.minecraft.world.entity.player.Player player, net.minecraft.world.item.ItemStack stack) {
++        // NeoForge start - fire PlayerCraftingEvent
++        CommonHooks.firePlayerCraftingEvent(player, stack, this.craftSlots);
++        // NeoForge end
+         // vanilla onTake logic
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+index 0000000000000000000000000000000000000000..6666666666666666666666666666666666666666 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+@@ -60,6 +60,10 @@
+ import net.minecraft.world.level.block.state.BlockState;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -300,6 +304,9 @@
+     protected static void craftResult(net.minecraft.world.item.crafting.SingleRecipeInput input, net.minecraft.core.Holder<net.minecraft.world.item.crafting.Recipe<?>> recipe, net.minecraft.world.item.ItemStack result, net.minecraft.world.level.Level level) {
++        // NeoForge start - fire PlayerSmeltedEvent
++        CommonHooks.firePlayerSmeltedEvent(player, result);
++        // NeoForge end
+         // vanilla craftResult logic

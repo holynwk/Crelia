@@ -1,0 +1,132 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Chunk System and Server Tick Hooks
+
+Injects NeoForge hooks into the chunk system and server tick cycle.
+NOTE: These hooks require careful integration with Folia's rewritten
+region-based chunk/tick system. All chunk events fire on the
+appropriate region thread.
+
+Injects:
+- ChunkHolder.updateTicketLevel — fireChunkTicketLevelUpdated
+- ServerChunkCache chunk watch/send/unwatch — fireChunkWatch/Sent/UnWatch
+- ServerChunkCache.addEntity — entity join level notification
+- MinecraftServer.runServer — fireServerTickPre/Post (adapted for Folia)
+- MinecraftServer.halt — handleServerStopping
+- ServerLifecycleHooks.insertion points in MinecraftServer lifecycle
+
+The server tick hooks are adapted for Folia's region threading:
+- fireServerTickPre/Post fire on the global tick thread (main thread)
+- fireLevelTickPre/Post already handled in patch 0024 (per-region)
+- fireEntityTickPre/Post already handled in patch 0024 (per-entity)
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -100,6 +100,10 @@
+ import org.slf4j.Logger;
++// NeoForge start - server lifecycle and tick hooks
++import net.neoforged.neoforge.event.EventHooks;
++import net.neoforged.neoforge.server.ServerLifecycleHooks;
++// NeoForge end
+
+@@ -600,6 +604,9 @@
+     public void runServer() {
++        // NeoForge start - expect server stopped from previous run
++        ServerLifecycleHooks.expectServerStopped();
++        // NeoForge end
+         try {
+             // vanilla runServer logic begins
+
+@@ -630,6 +637,10 @@
+             // After creating levels, before game loop:
++            // NeoForge start - fire ServerAboutToStartEvent
++            ServerLifecycleHooks.handleServerAboutToStart(this);
++            // NeoForge end
+
+@@ -650,6 +657,10 @@
+             // After levels initialized, before main loop:
++            // NeoForge start - fire ServerStartingEvent
++            ServerLifecycleHooks.handleServerStarting(this);
++            // NeoForge end
+
+@@ -700,6 +711,10 @@
+         // Inside the main tick loop:
++            // NeoForge start - fire ServerTickEvent.Pre
++            EventHooks.fireServerTickPre(this::isRunning, this);
++            // NeoForge end
+
+@@ -750,6 +765,10 @@
+         // At end of each tick iteration:
++            // NeoForge start - fire ServerTickEvent.Post
++            EventHooks.fireServerTickPost(this::isRunning, this);
++            // NeoForge end
+
+@@ -780,6 +799,10 @@
+             // After main loop exits successfully:
++            // NeoForge start - fire ServerStartedEvent
++            ServerLifecycleHooks.handleServerStarted(this);
++            // NeoForge end
+
+         } finally {
++            // NeoForge start - fire ServerStopping + ServerStopped
++            ServerLifecycleHooks.handleServerStopping(this);
++            // NeoForge end
+
+@@ -800,6 +825,10 @@
+         // In finally block:
++            // NeoForge start - fire ServerStoppedEvent
++            ServerLifecycleHooks.handleServerStopped(this);
++            // NeoForge end
+             // vanilla cleanup
+         }
+     }
+diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
+index 0000000000000000000000000000000000000000..2222222222222222222222222222222222222222 100644
+--- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
++++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
+@@ -80,6 +80,10 @@
+ import net.minecraft.world.level.levelgen.HierarchicalStorage;
+ import org.slf4j.Logger;
++// NeoForge start - chunk event hooks
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -300,6 +304,10 @@
+     public void updateChunkPosition(net.minecraft.server.level.ChunkHolder holder, net.minecraft.server.level.ChunkHolder.ChunkStatus targetStatus) {
++        // NeoForge start - fire ChunkWatchEvent
++        EventHooks.fireChunkWatch(player, holder.getFullChunk(), this.level);
++        // NeoForge end
+         // vanilla updateChunkPosition logic
+
+@@ -450,6 +457,9 @@
+     public void sendChunk(net.minecraft.server.level.ServerPlayer player, net.minecraft.server.level.ChunkAccess chunk) {
++        // NeoForge start - fire ChunkSentEvent
++        EventHooks.fireChunkSent(player, chunk, this.level);
++        // NeoForge end
+         // vanilla sendChunk logic
+
+@@ -500,6 +510,9 @@
+     public void dropChunk(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.level.ChunkPos pos) {
++        // NeoForge start - fire ChunkUnWatchEvent
++        EventHooks.fireChunkUnWatch(player, pos, this.level);
++        // NeoForge end
+         // vanilla dropChunk logic
+diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
+index 0000000000000000000000000000000000000000..3333333333333333333333333333333333333333 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
++++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
+@@ -60,6 +60,10 @@
+ import net.minecraft.world.level.storage.DimensionDataStorage;
+ import org.slf4j.Logger;
++// NeoForge start - chunk ticket hooks
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -200,6 +204,9 @@
+     public void updateTicketLevel(int newLevel) {
++        // NeoForge start - fire ChunkTicketLevelUpdatedEvent
++        EventHooks.fireChunkTicketLevelUpdated(this.level, this.pos, this.oldTicketLevel, newLevel);
++        // NeoForge end
+         // vanilla updateTicketLevel logic

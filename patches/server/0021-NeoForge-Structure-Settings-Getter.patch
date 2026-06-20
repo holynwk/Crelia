@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Structure Settings Getter
+
+Adds getModifiedStructureSettings() method to
+net.minecraft.world.level.levelgen.structure.Structure. This is a simple
+getter wrapper that the NeoForge coremod ReplaceFieldWithGetterAccess targets.
+
+At runtime, NeoForge's real ModifiableStructureInfo replaces this getter.
+For compile time, this returns the backing field directly.
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java b/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
+index 3fbd6e8d23f2e6020532530ef8ad7e64b8047d4b..bbbb0000bbbb0000bbbb0000bbbb0000bbbb00 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/Structure.java
+@@ -54,6 +54,16 @@
+     public HolderSet<Biome> biomes() {
+         return this.settings.biomes;
+     }
+ 
++    // NeoForge start - modifiable structure accessor (compile-time stub)
++    /**
++     * Returns the (possibly modified) structure settings.
++     * NeoForge's coremod replaces direct field access to settings with this method.
++     */
++    public StructureSettings getModifiedStructureSettings() {
++        return this.settings;
++    }
++    // NeoForge end
++
+     public Map<MobCategory, StructureSpawnOverride> spawnOverrides() {
+         return this.settings.spawnOverrides;
+     }

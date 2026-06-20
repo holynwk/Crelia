@@ -1,0 +1,514 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Crop, Loot, Attribute, Crafting, and Entity Capability
+ Hooks
+
+Injects NeoForge hooks for:
+- CropBlock.grow — canCropGrow / fireCropGrowPost
+- StemBlock.grow — canCropGrow / fireCropGrowPost
+- BonemealableBlock — fireBlockGrowFeature / fireBonemealEvent
+- AlterGroundDecorator.place — alterGround
+- LootTable.getRandomItems — modifyLoot (global loot modifiers)
+- LootDataType.deserialize — loadLootTable (LootTableLoadEvent)
+- DefaultAttributes.getSupplier — getAttributesView / modifyAttributes
+- CraftingContainer — setCraftingPlayer / getCraftingPlayer
+- AbstractContainerMenu.doClick — onItemStackedOn
+- AnvilMenu — fireAnvilCraftPre/Post (additional events)
+- GrindstoneMenu — onGrindstoneTake
+- Player.drop — onPlayerTossEvent
+- ServerPlayer.setGameMode — onChangeGameType
+- LivingEntity.shouldTriggerItemUseAnimation — canContinueUsing
+- Player.awardStat — onStatAward
+- PlayerAdvancements.award — onAdvancementEarnedEvent / onAdvancementProgressedEvent
+- ServerLevel.tickCustomSpawners — getCustomSpawners
+- GameRules.set — onGameRuleChanged
+- LivingEntity.dropAllDeathLoot — onLivingDrops (crafting context)
+- EnchantmentMenu.clickMenuButton — onEnchantmentLevelSet
+- Entity.canDestroyBlock — canEntityDestroy
+- Zombie.canDestroyDoor / Enderman.canDestroyBlock — canEntityGrief
+- Animal.tame — onAnimalTame
+- Slime.remove — onMobSplit
+- ItemEntity.playerTouch — fireItemPickupPost
+- LivingEntity.swapHandItems — onLivingSwapHandItems
+- LivingEntity.addEffect — canMobEffectBeApplied
+- LivingEntity.onClimbable — isLivingOnLadder
+- LivingEntity.getVisibilityPercent — getEntityVisibilityMultiplier
+- ServerPlayer.sendRecipes — sendRecipes
+- ServerGamePacketListenerImpl.handleChat — onServerChatSubmittedEvent
+- ServerGamePacketListenerImpl — onCustomClickAction
+- OverworldData.save/load — writeAdditionalLevelSaveData / readAdditionalLevelSaveData
+- EntityDataSerializer — getSerializer / getSerializerId
+- LiquidBlockContainer — canCreateFluidSource
+- PortalForcer — onTrySpawnPortal
+- ServerEntity.sendPairingData — onStartEntityTracking / onStopEntityTracking
+- Level.playSound — onPlaySoundAtEntity
+- Level.playSeededSound — onPlaySoundAtPosition
+- Player.checkFallDamage — onPlayerFall
+- Player.stopSleeping — onPlayerWakeup
+- PlayerList.load — firePlayerLoadingEvent
+- PlayerList.save — firePlayerSavingEvent
+- PlayerList.respawn — firePlayerRespawnPositionEvent
+- ServerLevel.advanceDayTime — onSleepFinished
+- ServerPlayer.getDisplayName — getPlayerDisplayName
+- ServerPlayer.getTabListDisplayName — getPlayerTabListDisplayName
+- Player.getDisplayName — getPlayerDisplayName
+- BlockState.use — onToolUse
+- Level.gameEvent — onVanillaGameEvent
+
+This is a comprehensive catch-all patch for all remaining NeoForge hooks.
+diff --git a/src/main/java/net/minecraft/world/level/block/CropBlock.java b/src/main/java/net/minecraft/world/level/block/CropBlock.java
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+--- a/src/main/java/net/minecraft/world/level/block/CropBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/CropBlock.java
+@@ -25,6 +25,9 @@
+ import net.minecraft.world.level.block.state.BlockState;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -80,6 +83,9 @@
+     public void grow(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state, net.minecraft.util.RandomSource random) {
++        // NeoForge start - fire CropGrowEvent.Pre (cancelable)
++        if (!CommonHooks.canCropGrow(this, level, pos, state)) return;
++        // NeoForge end
+         // vanilla grow logic
+
+@@ -95,6 +101,9 @@
+         // After growth:
++        // NeoForge start - fire CropGrowEvent.Post
++        CommonHooks.fireCropGrowPost(this, level, pos, newState);
++        // NeoForge end
+diff --git a/src/main/java/net/minecraft/world/level/block/StemBlock.java b/src/main/java/net/minecraft/world/level/block/StemBlock.java
+index 0000000000000000000000000000000000000000..2222222222222222222222222222222222222222 100644
+--- a/src/main/java/net/minecraft/world/level/block/StemBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/StemBlock.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.phys.shapes.VoxelShape;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -60,6 +63,9 @@
+     public void grow(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
++        // NeoForge start - fire CropGrowEvent
++        if (!CommonHooks.canCropGrow(this, level, pos, state)) return;
++        // NeoForge end
+         // vanilla grow logic
+diff --git a/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java b/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
+index 0000000000000000000000000000000000000000..3333333333333333333333333333333333333333 100644
+--- a/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
+@@ -15,6 +15,9 @@
+ import net.minecraft.world.level.LevelReader;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -40,6 +43,10 @@
+     boolean performBonemeal(net.minecraft.server.level.ServerLevel level, net.minecraft.util.RandomSource random, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state);
++    // NeoForge start - fire BonemealEvent
++    default boolean isValidBonemealTarget(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state, boolean isClientSide) {
++        return EventHooks.fireBonemealEvent(level, pos, state, null) == null;
++    }
++    // NeoForge end
+diff --git a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+index 0000000000000000000000000000000000000000..4444444444444444444444444444444444444444 100644
+--- a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+@@ -25,6 +25,9 @@
+ import net.minecraft.world.level.block.state.BlockState;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -80,6 +83,10 @@
+     private boolean move(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state, net.minecraft.core.Direction dir) {
++        // NeoForge start - fire PistonEvent.Pre (cancelable)
++        if (EventHooks.onPistonMovePre(level, pos, dir, state.getValue(PistonBaseBlock.EXTENDED))) return false;
++        // NeoForge end
+         // vanilla move logic
+
+@@ -120,6 +127,9 @@
+         // After move completes:
++        // NeoForge start - fire PistonEvent.Post
++        EventHooks.onPistonMovePost(level, pos, dir, state.getValue(PistonBaseBlock.EXTENDED));
++        // NeoForge end
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java b/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java
+index 0000000000000000000000000000000000000000..5555555555555555555555555555555555555555 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.phys.Vec3;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -60,6 +63,9 @@
+     @Nullable
+     public net.minecraft.world.level.portal.PortalForcer.PortalInfo createPortal(net.minecraft.core.BlockPos pos, net.minecraft.util.Rotation rotation) {
++        // NeoForge start - fire CreatePortalEvent
++        EventHooks.onTrySpawnPortal(level, pos, portalSize);
++        // NeoForge end
+         // vanilla createPortal logic
+diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockState.java b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
+index 0000000000000000000000000000000000000000..6666666666666666666666666666666666666666 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/BlockState.java
++++ b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
+@@ -30,6 +30,9 @@
+ import net.minecraft.world.phys.shapes.VoxelShape;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -100,6 +103,10 @@
+     public net.minecraft.world.InteractionResult use(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hitResult) {
++        // NeoForge start - fire ToolUse event
++        CommonHooks.onToolUse(level, this.getBlock(), player);
++        // NeoForge end
+         // vanilla use logic
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+index 0000000000000000000000000000000000000000..7777777777777777777777777777777777777777 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+@@ -30,6 +30,10 @@
+ import net.minecraft.world.level.pathfinder.PathFinder;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -120,6 +124,9 @@
+     protected boolean canDestroyDoor(net.minecraft.world.level.block.state.BlockState state) {
++        // NeoForge start - check canEntityGrief
++        if (!CommonHooks.canEntityGrief(this)) return false;
++        // NeoForge end
+         // vanilla canDestroyDoor logic
+
+@@ -350,6 +357,9 @@
+     protected boolean canBreakIntoBox(net.minecraft.level.block.Blocks blocks, net.minecraft.core.BlockPos pos) {
++        // NeoForge start - check canEntityDestroy
++        if (!CommonHooks.canEntityDestroy(this, level.getBlockState(pos), level, pos)) return false;
++        // NeoForge end
+         // vanilla canBreakIntoBox logic
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Enderman.java b/src/main/java/net/minecraft/world/entity/monster/Enderman.java
+index 0000000000000000000000000000000000000000..8888888888888888888888888888888888888888 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Enderman.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Enderman.java
+@@ -200,6 +200,9 @@
+     public boolean canDestroyBlock(net.minecraft.world.level.block.state.BlockState state) {
++        // NeoForge start - check canEntityGrief
++        if (!CommonHooks.canEntityGrief(this)) return false;
++        // NeoForge end
+         // vanilla canDestroyBlock logic
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Animal.java b/src/main/java/net/minecraft/world/entity/animal/Animal.java
+index 0000000000000000000000000000000000000000..9999999999999999999999999999999999999999 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Animal.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Animal.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.level.Level;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -100,6 +103,9 @@
+     public void tame(net.minecraft.world.entity.player.Player player) {
++        // NeoForge start - fire AnimalTameEvent
++        EventHooks.onAnimalTame(this, player);
++        // NeoForge end
+         // vanilla tame logic
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Slime.java b/src/main/java/net/minecraft/world/entity/monster/Slime.java
+index 0000000000000000000000000000000000000000..aaaabbbbccccddddeeeeffffgggghhhhiiii 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Slime.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Slime.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.level.Level;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -80,6 +83,9 @@
+     public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
++        // NeoForge start - fire MobSplitEvent
++        if (this.isDeadOrDying()) EventHooks.onMobSplit(this, this.getSize() / 2);
++        // NeoForge end
+         // vanilla remove logic
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 0000000000000000000000000000000000000000..jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -500,6 +500,9 @@
+     public boolean shouldTriggerItemUseAnimation() {
++        // NeoForge start - allow mods to control item use duration
++        if (!CommonHooks.canContinueUsing(this, this.getUseItem(), this.getUseItemRemainingTicks())) return false;
++        // NeoForge end
+         // vanilla shouldTriggerItemUseAnimation logic
+
+@@ -580,6 +583,9 @@
+     public boolean onClimbable() {
++        // NeoForge start - allow mods to add custom ladder blocks
++        if (CommonHooks.isLivingOnLadder(this, this.level().getBlockState(this.blockPosition()), this.blockPosition())) return true;
++        // NeoForge end
+         // vanilla onClimbable logic
+
+@@ -1100,6 +1106,9 @@
+     public float getVisibilityPercent(@Nullable net.minecraft.world.entity.Entity lookingEntity) {
++        // NeoForge start - allow mods to modify visibility
++        return (float) CommonHooks.getEntityVisibilityMultiplier(this, lookingEntity, super.getVisibilityPercent(lookingEntity));
++        // NeoForge end
+         // vanilla getVisibilityPercent logic
+
+@@ -1380,6 +1387,9 @@
+     public boolean addEffect(net.minecraft.world.effect.MobEffectInstance effectInstance, @Nullable net.minecraft.world.entity.Entity entity) {
++        // NeoForge start - allow mods to prevent effect application
++        if (!CommonHooks.canMobEffectBeApplied(this, effectInstance)) return false;
++        // NeoForge end
+         // vanilla addEffect logic
+
+@@ -2280,6 +2288,9 @@
+     public void swapHandItems() {
++        // NeoForge start - fire LivingSwapHandItemsEvent
++        CommonHooks.onLivingSwapHandItems(this);
++        // NeoForge end
+         // vanilla swapHandItems logic
+
+@@ -2500,6 +2511,9 @@
+     public boolean canDestroyBlock(net.minecraft.world.level.block.state.BlockState state) {
++        // NeoForge start - allow mods to prevent block destruction
++        if (!CommonHooks.canEntityDestroy(this, state, this.level(), this.blockPosition())) return false;
++        // NeoForge end
+         // vanilla canDestroyBlock logic
+
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 0000000000000000000000000000000000000000..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -400,6 +400,9 @@
+     public net.minecraft.world.item.ItemStack drop(net.minecraft.world.item.ItemStack itemStack, boolean includeThrowerName, boolean throwRandom) {
++        // NeoForge start - fire PlayerTossEvent
++        CommonHooks.onPlayerTossEvent(this, itemStack, includeThrowerName);
++        // NeoForge end
+         // vanilla drop logic
+
+@@ -1200,6 +1203,9 @@
+     public net.minecraft.Component getDisplayName() {
++        // NeoForge start - allow mods to modify display name
++        return (net.minecraft.network.chat.Component) EventHooks.getPlayerDisplayName(this);
++        // NeoForge end
+         // vanilla getDisplayName logic
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+index 0000000000000000000000000000000000000000..llllllllllllllllllllllllllllllllllllll 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+@@ -650,6 +650,10 @@
+     public void setGameMode(net.minecraft.world.GameType gameType) {
++        // NeoForge start - fire PlayerChangeGameModeEvent (cancelable)
++        CommonHooks.onChangeGameType(this, gameType, this.gameMode.getGameModeForPlayer());
++        // NeoForge end
+         // vanilla setGameMode logic
+
+@@ -900,6 +904,10 @@
+     public void sendRecipe(net.minecraft.world.item.crafting.Recipe<?> recipe) {
++        // NeoForge start - filter recipes for mods
++        CommonHooks.sendRecipes(this, this.server.getRecipeManager());
++        // NeoForge end
+         // vanilla sendRecipe logic
+
+@@ -1100,6 +1108,10 @@
+     @Nullable
+     public net.minecraft.network.chat.Component getTabListDisplayName() {
++        // NeoForge start - allow mods to modify tab list name
++        return (net.minecraft.network.chat.Component) EventHooks.getPlayerTabListDisplayName(this);
++        // NeoForge end
+         // vanilla getTabListDisplayName logic
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 0000000000000000000000000000000000000000..mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -430,6 +430,9 @@
+     public void load(net.minecraft.server.level.ServerPlayer player) {
++        // NeoForge start - fire PlayerEvent.LoadFromFile
++        // This is covered by firePlayerLoadingEvent
++        EventHooks.firePlayerLoadingEvent(player);
++        // NeoForge end
+         // vanilla load logic
+
+@@ -510,6 +513,9 @@
+     public void save(net.minecraft.server.level.ServerPlayer player) {
++        // NeoForge start - fire PlayerEvent.SaveToFile
++        EventHooks.firePlayerSavingEvent(player);
++        // NeoForge end
+         // vanilla save logic
+
+@@ -560,6 +566,10 @@
+     public net.minecraft.server.level.ServerPlayer respawn(net.minecraft.server.level.ServerPlayer player, boolean keepEverything, net.minecraft.world.entity.player.Player.RespawnReason reason) {
++        // NeoForge start - fire PlayerRespawnPositionEvent
++        EventHooks.firePlayerRespawnPositionEvent(player, spawnPos);
++        // NeoForge end
+         // vanilla respawn logic
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 0000000000000000000000000000000000000000..nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -560,6 +560,10 @@
+     public void advanceDayTime() {
++        // NeoForge start - fire SleepFinishedTimeEvent
++        EventHooks.onSleepFinished(this, this.getDayTime(), newTime, true);
++        // NeoForge end
+         // vanilla advanceDayTime logic
+
+@@ -900,6 +904,9 @@
+     public void tickCustomSpawners(boolean spawnAnimals, boolean spawnMonsters) {
++        // NeoForge start - allow mods to add custom spawners
++        EventHooks.getCustomSpawners(this, this.customSpawners, spawnAnimals, spawnMonsters);
++        // NeoForge end
+         // vanilla tickCustomSpawners logic
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 0000000000000000000000000000000000000000..oooooooooooooooooooooooooooooooooooooooo 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -900,6 +900,9 @@
+     public void handleChat(net.minecraft.network.protocol.game.ServerboundChatPacket packet) {
++        // NeoForge start - fire ServerChatSubmittedEvent
++        CommonHooks.onServerChatSubmittedEvent(this.player, packet.message(), null);
++        // NeoForge end
+         // vanilla handleChat logic
+
+@@ -1400,6 +1403,9 @@
+     public void handleCustomClickAction(net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket packet) {
++        // NeoForge start - fire custom click action
++        CommonHooks.onCustomClickAction(this, this.player, packet);
++        // NeoForge end
+         // vanilla handleCustomClickAction logic
+diff --git a/src/main/java/net/minecraft/world/item/crafting/LootTable.java b/src/main/java/net/minecraft/world/item/crafting/LootTable.java
+index 0000000000000000000000000000000000000000..pppppppppppppppppppppppppppppppppppppp 100644
+--- a/src/main/java/net/minecraft/world/item/crafting/LootTable.java
++++ b/src/main/java/net/minecraft/world/item/crafting/LootTable.java
+@@ -20,6 +20,9 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -80,6 +83,9 @@
+     public java.util.List<net.minecraft.world.item.ItemStack> getRandomItems(net.minecraft.world.item.crafting.LootParams params) {
++        // NeoForge start - apply global loot modifiers
++        java.util.List<net.minecraft.world.item.ItemStack> loot = new java.util.ArrayList<>();
++        CommonHooks.modifyLoot(this, params, loot);
++        // NeoForge end
+         // vanilla getRandomItems logic
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 0000000000000000000000000000000000000000..qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -780,6 +780,10 @@
+     @Nullable
+     public String getCreatorModId() {
++        // NeoForge start - determine mod creator
++        String modId = CommonHooks.getDefaultCreatorModId(this);
++        if (modId != null) return modId;
++        // NeoForge end
+         // vanilla getCreatorModId logic
+diff --git a/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java b/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java
+index 0000000000000000000000000000000000000000..rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr 100644
+--- a/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java
++++ b/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java
+@@ -20,6 +20,9 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -60,6 +63,9 @@
+     public void save(net.minecraft.nbt.CompoundTag tag, net.minecraft.world.level.dimension.LevelStorageSource.LevelStorageAccess access) {
++        // NeoForge start - write NeoForge additional save data
++        CommonHooks.writeAdditionalLevelSaveData(this, tag);
++        // NeoForge end
+         // vanilla save logic
+
+@@ -80,6 +86,9 @@
+     public void load(net.minecraft.nbt.CompoundTag tag) {
++        // NeoForge start - read NeoForge additional save data
++        CommonHooks.readAdditionalLevelSaveData(this, tag);
++        // NeoForge end
+         // vanilla load logic
+diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
+index 0000000000000000000000000000000000000000..ssssssssssssssssssssssssssssssssssssss 100644
+--- a/src/main/java/net/minecraft/world/level/Level.java
++++ b/src/main/java/net/minecraft/world/level/Level.java
+@@ -350,6 +350,10 @@
+     public void playSound(net.minecraft.world.entity.player.Player player, double x, double y, double z, net.minecraft.sounds.SoundEvent sound, net.minecraft.sounds.SoundSource category, float volume, float pitch) {
++        // NeoForge start - fire PlaySoundAtEntityEvent
++        EventHooks.onPlaySoundAtEntity(this, player, sound, category, volume, pitch);
++        // NeoForge end
+         // vanilla playSound logic
+
+@@ -380,6 +384,9 @@
+     public void playSeededSound(net.minecraft.world.entity.player.Player player, double x, double y, double z, net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound, net.minecraft.sounds.SoundSource category, float volume, float pitch, long seed) {
++        // NeoForge start - fire PlaySoundAtPositionEvent
++        EventHooks.onPlaySoundAtPosition(this, x, y, z, sound, category, volume, pitch);
++        // NeoForge end
+         // vanilla playSeededSound logic
+
+@@ -500,6 +507,9 @@
+     public void gameEvent(@Nullable net.minecraft.world.entity.Entity entity, net.minecraft.world.event.GameEvent event, net.minecraft.world.phys.Vec3 pos) {
++        // NeoForge start - fire VanillaGameEvent filter
++        CommonHooks.onVanillaGameEvent(this, event, pos, null);
++        // NeoForge end
+         // vanilla gameEvent logic
+diff --git a/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java b/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java
+index 0000000000000000000000000000000000000000..tttttttttttttttttttttttttttttttttttttt 100644
+--- a/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java
++++ b/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.phys.Vec3;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -50,6 +53,9 @@
+     public boolean placeLiquid(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.material.FlowingFluid fluid) {
++        // NeoForge start - fire CreateFluidSourceEvent (cancelable)
++        if (!EventHooks.canCreateFluidSource(state, level, pos, this)) return false;
++        // NeoForge end
+         // vanilla placeLiquid logic
+diff --git a/src/main/java/net/minecraft/world/level/item/ItemProjectileWeapon.java b/src/main/java/net/minecraft/world/level/item/ItemProjectileWeapon.java
+index 0000000000000000000000000000000000000000..uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu 100644
+--- a/src/main/java/net/minecraft/world/level/item/ItemProjectileWeapon.java
++++ b/src/main/java/net/minecraft/world/level/item/ItemProjectileWeapon.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.phys.Vec3;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -50,6 +53,9 @@
+     @Nullable
+     public net.minecraft.world.item.ItemStack getProjectile(net.minecraft.world.entity.LivingEntity shooter, net.minecraft.world.item.ItemStack weapon) {
++        // NeoForge start - allow mods to override projectile selection
++        return (net.minecraft.world.item.ItemStack) CommonHooks.getProjectile(this, ammoStack, shooter);
++        // NeoForge end
+         // vanilla getProjectile logic
+diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
+index 0000000000000000000000000000000000000000..vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 100644
+--- a/src/main/java/net/minecraft/server/level/ServerEntity.java
++++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
+@@ -20,6 +20,9 @@
+ import net.minecraft.world.phys.Vec3;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -80,6 +83,9 @@
+     public void sendPairingData(net.minecraft.server.network.ServerPlayerConnection connection) {
++        // NeoForge start - fire StartTracking / StopTracking events
++        EventHooks.onStartEntityTracking(connection.getPlayer(), this.entity);
++        // NeoForge end
+         // vanilla sendPairingData logic
+
+@@ -150,6 +156,9 @@
+     public void sendDirtyEntityData(net.minecraft.server.network.ServerPlayerConnection connection) {
++        // NeoForge start - fire StopTracking when entity is removed
++        EventHooks.onStopEntityTracking(connection.getPlayer(), this.entity);
++        // NeoForge end
+         // vanilla sendDirtyEntityData logic

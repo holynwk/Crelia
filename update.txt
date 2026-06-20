@@ -3,3 +3,11 @@
 - chk player login logic
 - chk entity/player teleport/respawn logic
 - chk ServerClockManager
+
+- Phase 1 TODO:
+  - RegionAwareEventBus: route ServerStartingEvent → GlobalRegionScheduler
+  - RegionAwareEventBus: route World/Chunk events → RegionScheduler by coords
+  - Detection mixin: reject vanilla API calls off-region
+  - crelia-supported.json manifest loading in FML bootstrap
+  - CreliaModLoadingPlugin: strict/dev mode mod filtering
+  - CrashReport enrichment: region id, thread, mod stack

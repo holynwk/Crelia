@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge FlowerPotBlock Potted Getter
+
+Annotates the existing getPotted() method in FlowerPotBlock as the NeoForge
+coremod target for the ReplaceFieldWithGetterAccess transformation. The method
+already exists in this Folia version, so this patch only adds a marker comment.
+
+NeoForge's coremod replaces direct GETFIELD access to the potted field with
+calls to this getter method, allowing mods to intercept or redirect what block
+a FlowerPotBlock is considered to contain.
+
+diff --git a/src/main/java/net/minecraft/world/level/block/FlowerPotBlock.java b/src/main/java/net/minecraft/world/level/block/FlowerPotBlock.java
+index 7194565ad1a910fe300d8664a30b35c4eff18cb7..662bd46e460cbbf335dfd56274fd9936e0c90e5e 100644
+--- a/src/main/java/net/minecraft/world/level/block/FlowerPotBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/FlowerPotBlock.java
+@@ -127,6 +127,7 @@ public class FlowerPotBlock extends Block {
+             : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
+     }
+ 
++    // NeoForge: getPotted() below is used by coremod ReplaceFieldWithGetterAccess for potted field
+     public Block getPotted() {
+         return this.potted;
+     }

@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.crelia.compat.create.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "crelia-compat-create.refmap.json",
+  "plugin": "com.crelia.compat.create.mixin.CreliaCompatCreateMixinPlugin",
+  "mixins": [
+    "kinetic.KineticNetworkRegionMixin",
+    "contraption.ContraptionRegionMixin",
+    "projectile.CBCProjectileRegionMixin",
+    "explosion.ExplosionRegionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "comment": "Crelia mod compatibility manifest. Mods listed here are explicitly tested/patched for regionized threading. Loader rejects unlisted mods in STRICT mode, warns in DEV mode.",
+  "strictMode": false,
+  "supportedMods": [
+    {
+      "modId": "crelia_compat_create",
+      "required": false,
+      "notes": "Create + CBC cross-region kinetic/contraption/projectile handling"
+    },
+    {
+      "modId": "crelia_compat_sable",
+      "required": false,
+      "notes": "Sable sub-level cross-region + Create Aeronautics JNI audit"
+    },
+    {
+      "modId": "neoforge",
+      "required": true,
+      "notes": "Core NeoForge runtime — region-aware event bus (Phase 1)"
+    },
+    {
+      "modId": "minecraft",
+      "required": true,
+      "notes": "Vanilla — all server hooks patched through minecraft-patches"
+    }
+  ],
+  "excludedMods": [
+    {
+      "modId": "c2me",
+      "reason": "Conflicts with Folia region threading — parallel chunk gen/scheduling on single-thread region model causes data races and crashes",
+      "severity": "CRITICAL"
+    }
+  ]
+}

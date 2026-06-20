@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "crelia.core.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "plugin": "crelia.core.CreliaMixinPlugin",
+  "mixins": [
+    "server.MinecraftServerLifecycleMixin",
+    "server.ServerLevelRegionMixin",
+    "entity.PlayerLoginRegionMixin",
+    "entity.EntityRegionValidationMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

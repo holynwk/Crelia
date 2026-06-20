@@ -1,0 +1,41 @@
+modLoader="javafml"
+loaderVersion="[3,)"
+license="LGPL-2.1-or-later"
+issueTrackerURL="https://github.com/crelia/crelia-neoforge/issues"
+
+[[mods]]
+    modId="crelia_compat_create"
+    version="${version}"
+    displayName="Crelia Compat: Create"
+    authors="Crelia Team"
+    description='''
+    Compatibility layer for Create and Create Big Cannons on Crelia (Folia-based) regionized servers.
+
+    Patches Create's kinetic networks, contraptions, projectiles, and explosions to operate
+    correctly on Folia's per-region threading model, preventing cross-thread data corruption
+    and ensuring thread-safe block/entity interactions.
+    '''
+
+[[dependencies.crelia_compat_create]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.crelia_compat_create]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1,1.21.2)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.crelia_compat_create]]
+    modId="create"
+    type="required"
+    versionRange="[0.5.1,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mixins]]
+    config="crelia-compat-create.mixins.json"

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Biome ClimateSettings Getter
+
+Adds getModifiedClimateSettings() and getModifiedSpecialEffects() methods
+to net.minecraft.world.level.biome.Biome. These are simple getter wrappers
+that the NeoForge coremod ReplaceFieldWithGetterAccess targets to replace
+direct GETFIELD accesses with virtual method calls, enabling biome modification.
+
+At runtime, NeoForge's real ModifiableBiomeInfo replaces these simple getters.
+For compile time, these return the backing fields directly.
+
+diff --git a/src/main/java/net/minecraft/world/level/biome/Biome.java b/src/main/java/net/minecraft/world/level/biome/Biome.java
+index 90c165c890a2d998e3b0af9b4310e3995ede6f64..aaaa0000aaaa0000aaaa0000aaaa0000aaaa00 100644
+--- a/src/main/java/net/minecraft/world/level/biome/Biome.java
++++ b/src/main/java/net/minecraft/world/level/biome/Biome.java
+@@ -92,6 +92,24 @@
+         return this.mobSettings;
+     }
+ 
++    // NeoForge start - modifiable biome accessors (compile-time stubs)
++    /**
++     * Returns the (possibly modified) climate settings for this biome.
++     * NeoForge's coremod replaces direct field access to climateSettings with this method.
++     */
++    public ClimateSettings getModifiedClimateSettings() {
++        return this.climateSettings;
++    }
++
++    /**
++     * Returns the (possibly modified) special effects for this biome.
++     * NeoForge's coremod replaces direct field access to specialEffects with this method.
++     */
++    public BiomeSpecialEffects getModifiedSpecialEffects() {
++        return this.specialEffects;
++    }
++    // NeoForge end
++
+     public boolean hasPrecipitation() {
+         return this.climateSettings.hasPrecipitation();
+     }

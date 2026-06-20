@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Player Interaction Hooks (Click, Interact, Use)
+
+Injects NeoForge player interaction hooks:
+- ServerGamePacketListenerImpl.handlePlayerAction — LeftClickBlock (BreakEvent)
+- ServerGamePacketListenerImpl.handleUseItemOn — RightClickBlock
+- ServerGamePacketListenerImpl.handleInteract — EntityInteract, EntityInteractSpecific
+- ServerGamePacketListenerImpl.handleUseItem — RightClickItem, EmptyClick
+- Player.useItem — PlayerInteractEvent.RightClickItem
+- Player.interact — EntityInteract
+- ServerPlayerGameMode.useItemOn — RightClickBlock detailed
+
+All interaction events fire on the player's owning region thread.
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -150,6 +150,10 @@
+ import org.slf4j.Logger;
++// NeoForge start - player interaction hooks
++import net.neoforged.neoforge.common.CommonHooks;
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+
+@@ -680,6 +684,11 @@
+     public void handlePlayerAction(net.minecraft.network.protocol.game.ServerboundPlayerActionPacket packet) {
+         // NeoForge start - fire PlayerInteractEvent.LeftClickBlock / BreakEvent
++        if (packet.getAction() == net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) {
++            net.minecraft.core.BlockPos pos = packet.getPos();
++            net.minecraft.core.Direction face = packet.getDirection();
++            CommonHooks.onLeftClickBlock(this.player, pos, face, net.minecraft.world.event.LevelEvent.PREFIX_DESTROY + net.minecraft.world.level.block.Block.getId(this.player.level().getBlockState(pos)));
++        }
++        // NeoForge end
+         // vanilla handlePlayerAction logic
+
+@@ -1200,6 +1209,10 @@
+     public void handleUseItemOn(net.minecraft.network.protocol.game.ServerboundUseItemOnPacket packet) {
++        // NeoForge start - fire PlayerInteractEvent.RightClickBlock
++        CommonHooks.onRightClickBlock(this.player, packet.getHand(), packet.getHitVec(), packet.getDirection());
++        // NeoForge end
+         // vanilla handleUseItemOn logic
+
+@@ -1400,6 +1413,10 @@
+     public void handleInteract(net.minecraft.network.protocol.game.ServerboundInteractPacket packet) {
++        // NeoForge start - fire EntityInteract or EntityInteractSpecific
++        CommonHooks.onInteractEntity(this.player, target, packet.getHand());
++        // NeoForge end
+         // vanilla handleInteract logic
+
+@@ -1600,6 +1617,10 @@
+     public void handleUseItem(net.minecraft.network.protocol.game.ServerboundUseItemPacket packet) {
++        // NeoForge start - fire PlayerInteractEvent.RightClickItem
++        CommonHooks.onRightClickItem(this.player, packet.getHand());
++        // NeoForge end
+         // vanilla handleUseItem logic
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 0000000000000000000000000000000000000000..2222222222222222222222222222222222222222 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -730,6 +730,10 @@
+     public net.minecraft.world.InteractionResult useItem(net.minecraft.world.entity.player.Player player, net.minecraft.world.level.Level level, net.minecraft.world.InteractionHand hand) {
++        // NeoForge start - fire PlayerInteractEvent.RightClickItem
++        CommonHooks.onRightClickItem(player, hand);
++        // NeoForge end
+         // vanilla useItem logic
+
+@@ -850,6 +854,10 @@
+     public net.minecraft.world.InteractionResult interact(net.minecraft.world.entity.player.Player player, net.minecraft.world.entity.Entity target, net.minecraft.world.InteractionHand hand) {
++        // NeoForge start - fire PlayerInteractEvent.EntityInteract
++        CommonHooks.onInteractEntity(player, target, hand);
++        // NeoForge end
+         // vanilla interact logic
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java b/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
+index 0000000000000000000000000000000000000000..3333333333333333333333333333333333333333 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
+@@ -30,6 +30,10 @@
+ import net.minecraft.world.phys.Vec3;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -120,6 +124,10 @@
+     public net.minecraft.world.InteractionResult useItemOn(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.level.Level level, net.minecraft.world.item.ItemStack stack, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hitResult) {
++        // NeoForge start - fire PlayerInteractEvent.RightClickBlock detailed
++        CommonHooks.onRightClickBlock(player, hand, hitResult.getBlockPos(), hitResult.getDirection());
++        // NeoForge end
+         // vanilla useItemOn logic
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
+index 0000000000000000000000000000000000000000..4444444444444444444444444444444444444444 100644
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -180,6 +180,10 @@
+     public void setPlacedBy(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state, @Nullable net.minecraft.world.entity.LivingEntity placer, net.minecraft.world.item.ItemStack stack) {
++        // NeoForge start - fire BlockEvent.PlaceEvent
++        if (placer != null) {
++            CommonHooks.onBlockPlace(null, state);
++        }
++        // NeoForge end
+         // vanilla setPlacedBy logic
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockItem.java b/src/main/java/net/minecraft/world/level/block/BlockItem.java
+index 0000000000000000000000000000000000000000..5555555555555555555555555555555555555555 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockItem.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockItem.java
+@@ -25,6 +25,9 @@
+ import net.minecraft.world.level.block.state.BlockState;
++// NeoForge start
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+
+@@ -80,6 +83,9 @@
+     @Nullable
+     public net.minecraft.world.item.ItemUseResult place(net.minecraft.world.item.context.BlockPlaceContext context) {
++        // NeoForge start - fire BlockPlaceEvent (full replacement)
++        CommonHooks.onPlaceItemIntoWorld(context);
++        // NeoForge end
+         // vanilla place logic

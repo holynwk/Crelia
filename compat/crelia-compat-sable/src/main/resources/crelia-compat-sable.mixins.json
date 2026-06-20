@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.crelia.compat.sable.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "crelia-compat-sable.refmap.json",
+  "plugin": "com.crelia.compat.sable.mixin.CreliaCompatSableMixinPlugin",
+  "mixins": [
+    "physics.RapierPhysicsStepMixin",
+    "physics.JNICallbackAuditMixin",
+    "sublevel.SubLevelCreateMixin",
+    "sublevel.SubLevelTransferMixin",
+    "vehicle.VehicleAssemblyMixin",
+    "vehicle.VehicleDisassemblyMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

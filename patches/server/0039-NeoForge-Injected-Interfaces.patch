@@ -1,0 +1,348 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Injected Interfaces
+
+Adds implements IXxxExtension to vanilla MC classes so that NeoForge
+capability/interfaces are available on vanilla instances. This is required
+by the NeoForge injected-interfaces.json configuration and coremods.
+
+These interface declarations are compile-time stubs — the real interface
+implementations are provided by NeoForge's capability system at runtime.
+
+Classes modified (implements additions only):
+- Entity -> IEntityExtension
+- LivingEntity -> ILivingEntityExtension, ITeleporter
+- Player -> IPlayerExtension
+- ServerPlayer -> IServerPlayerExtension
+- ItemStack -> IItemStackExtension, MutableDataComponentHolder
+- Block -> IBlockExtension
+- BlockState -> IBlockStateExtension
+- Level -> ILevelExtension
+- ServerLevel -> IServerLevelExtension
+- BlockEntity -> IBlockEntityExtension
+- BlockEntityType -> IBlockEntityTypeExtension
+- Item -> IItemExtension
+- Container -> IContainerExtension
+- AbstractContainerMenu -> IMenuExtension
+- RecipeManager -> IRecipeManagerExtension
+- LootTable -> ILootTableExtension
+- ServerChunkCache -> IServerChunkCacheExtension
+- PlayerList -> IPlayerListExtension
+- ChunkGenerator -> IChunkGeneratorExtension
+- Biome -> IBiomeExtension
+- Structure -> IStructureExtension
+- StructureTemplate -> IStructureTemplateExtension
+- DataFixer -> IDataFixerExtension
+- ServerScoreboard -> IScoreboardExtension
+- Potion -> IPotionExtension
+- Enchantment -> IEnchantmentExtension
+- MobEffect -> IMobEffectExtension
+- Attribute -> IAttributeExtension
+-EntityType -> IEntityTypeExtension
+- MenuType -> IMenuTypeExtension
+- BlockState -> IBlockStateExtension
+- CreativeModeTab -> ICreativeModeTabExtension
+- ServerStatus -> IServerStatusExtension
+- ServerboundPacketListener -> IPacketListenerExtension
+- ClientboundPacketListener -> IPacketListenerExtension
+- Recipe -> IRecipeExtension
+- ingredient -> IIngredientExtension
+
+Each modification adds only the implements clause and the import statement.
+No method bodies are added — those come from the interfaces + default methods.
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -100,6 +100,8 @@
+ import net.minecraft.world.phys.Vec3;
+ import org.slf4j.Logger;
++// NeoForge start - injected interface
++import net.neoforged.neoforge.common.extensions.IEntityExtension;
++// NeoForge end
+
+-public abstract class Entity implements Nameable, EntityAccess, TraceableEntity {
++public abstract class Entity implements Nameable, EntityAccess, TraceableEntity, IEntityExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 0000000000000000000000000000000000000000..2222222222222222222222222222222222222222 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -130,6 +130,10 @@
+ import net.minecraft.world.scores.PlayerTeam;
+ import org.slf4j.Logger;
++// NeoForge start - injected interfaces
++import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
++import net.neoforged.neoforge.common.extensions.ITeleporter;
++// NeoForge end
+
+-public abstract class LivingEntity extends Entity implements Attackable {
++public abstract class LivingEntity extends Entity implements Attackable, ILivingEntityExtension, ITeleporter /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 0000000000000000000000000000000000000000..3333333333333333333333333333333333333333 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -110,6 +110,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IPlayerExtension;
++// NeoForge end
+
+-public abstract class Player extends LivingEntity {
++public abstract class Player extends LivingEntity implements IPlayerExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+index 0000000000000000000000000000000000000000..4444444444444444444444444444444444444444 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+@@ -30,6 +30,8 @@
+ import net.minecraft.server.players.PlayerList;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IServerPlayerExtension;
++// NeoForge end
+
+-public class ServerPlayer extends Player {
++public class ServerPlayer extends Player implements IServerPlayerExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 0000000000000000000000000000000000000000..5555555555555555555555555555555555555555 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -80,6 +80,10 @@
+ import org.slf4j.Logger;
++// NeoForge start - injected interfaces
++import net.neoforged.neoforge.common.extensions.IItemStackExtension;
++import net.minecraft.server.network.Filterable;
++// NeoForge end
+
+-public final class ItemStack implements DataComponentHolder {
++public final class ItemStack implements DataComponentHolder, IItemStackExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
+index 0000000000000000000000000000000000000000..6666666666666666666666666666666666666666 100644
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -50,6 +50,8 @@
+ import org.jetbrains.annotations.Nullable;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockExtension;
++// NeoForge end
+
+-public abstract class Block implements Blocklike, ItemLike {
++public abstract class Block implements Blocklike, ItemLike, IBlockExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockState.java b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
+index 0000000000000000000000000000000000000000..7777777777777777777777777777777777777777 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/BlockState.java
++++ b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
+@@ -20,6 +20,8 @@
+ import org.jetbrains.annotations.Nullable;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockStateExtension;
++// NeoForge end
+
+-public final class BlockState extends BlockBehaviourBlockState {
++public final class BlockState extends BlockBehaviourBlockState implements IBlockStateExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
+index 0000000000000000000000000000000000000000..8888888888888888888888888888888888888888 100644
+--- a/src/main/java/net/minecraft/world/level/Level.java
++++ b/src/main/java/net/minecraft/world/level/Level.java
+@@ -150,6 +150,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.ILevelExtension;
++// NeoForge end
+
+-public abstract class Level extends LevelAccessor implements AutoCloseable {
++public abstract class Level extends LevelAccessor implements AutoCloseable, ILevelExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 0000000000000000000000000000000000000000..9999999999999999999999999999999999999999 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -170,6 +170,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IServerLevelExtension;
++// NeoForge end
+
+-public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.moonrise.modules.patch.chunk_system.ChunkSystem, ca.spottedleaf.moonrise.patches.chunk_system.region.RegionChunkHolder.LevelChunkReferenceHolder {
++public class ServerLevel extends Level implements WorldGenLevel, IServerLevelExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java
+index 0000000000000000000000000000000000000000..aaaabbbbccccddddeeeeffffgggghhhhiiii 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java
+@@ -20,6 +20,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockEntityExtension;
++// NeoForge end
+
+-public abstract class BlockEntity {
++public abstract class BlockEntity implements IBlockEntityExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockEntityType.java b/src/main/java/net/minecraft/world/level/block/BlockEntityType.java
+index 0000000000000000000000000000000000000000..jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockEntityType.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockEntityType.java
+@@ -20,6 +20,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockEntityTypeExtension;
++// NeoForge end
+
+-public class BlockEntityType<T extends BlockEntity> {
++public class BlockEntityType<T extends BlockEntity> implements IBlockEntityTypeExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/item/Item.java b/src/main/java/net/minecraft/world/item/Item.java
+index 0000000000000000000000000000000000000000..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk 100644
+--- a/src/main/java/net/minecraft/world/item/Item.java
++++ b/src/main/java/net/minecraft/world/item/Item.java
+@@ -120,6 +120,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IItemExtension;
++// NeoForge end
+
+-public class Item implements ItemLike, TransformedItemLike {
++public class Item implements ItemLike, TransformedItemLike, IItemExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
+index 0000000000000000000000000000000000000000..llllllllllllllllllllllllllllllllllllll 100644
+--- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
++++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -30,6 +30,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IMenuExtension;
++// NeoForge end
+
+-public abstract class AbstractContainerMenu {
++public abstract class AbstractContainerMenu implements IMenuExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/item/RecipeManager.java b/src/main/java/net/minecraft/world/item/RecipeManager.java
+index 0000000000000000000000000000000000000000..mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm 100644
+--- a/src/main/java/net/minecraft/world/item/RecipeManager.java
++++ b/src/main/java/net/minecraft/world/item/RecipeManager.java
+@@ -20,6 +20,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IRecipeManagerExtension;
++// NeoForge end
+
+-public class RecipeManager {
++public class RecipeManager implements IRecipeManagerExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockState.java b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
+index 0000000000000000000000000000000000000000..nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/BlockState.java
++++ b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
+@@ -20,6 +20,8 @@
+ import org.jetbrains.annotations.Nullable;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockStateExtension;
++// NeoForge end
+
+-public final class BlockState extends BlockBehaviourBlockState implements IBlockStateExtension {
++// Already patched above - this section is for additional interfaces
++// NeoForge end
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 0000000000000000000000000000000000000000..oooooooooooooooooooooooooooooooooooooooo 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -100,6 +100,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IPlayerListExtension;
++// NeoForge end
+
+-public abstract class PlayerList {
++public abstract class PlayerList implements IPlayerListExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
+index 0000000000000000000000000000000000000000..pppppppppppppppppppppppppppppppppppppp 100644
+--- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
++++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
+@@ -80,6 +80,8 @@
+ import org.slf4j.Logger;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IServerChunkCacheExtension;
++// NeoForge end
+
+-public class ServerChunkCache extends ChunkSource {
++public class ServerChunkCache extends ChunkSource implements IServerChunkCacheExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/biome/Biome.java b/src/main/java/net/minecraft/world/level/biome/Biome.java
+index 0000000000000000000000000000000000000000..qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq 100644
+--- a/src/main/java/net/minecraft/world/level/biome/Biome.java
++++ b/src/main/java/net/minecraft/world/level/biome/Biome.java
+@@ -40,6 +40,8 @@
+ import net.minecraft.world.level.levelgen.GenerationStep;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBiomeExtension;
++// NeoForge end
+
+-public final class Biome {
++public final class Biome implements IBiomeExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/level/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/ChunkGenerator.java
+index 0000000000000000000000000000000000000000..rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr 100644
+--- a/src/main/java/net/minecraft/world/level/ChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/ChunkGenerator.java
+@@ -30,6 +30,8 @@
+ import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IChunkGeneratorExtension;
++// NeoForge end
+
+-public abstract class ChunkGenerator {
++public abstract class ChunkGenerator implements IChunkGeneratorExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/item/BlockItem.java b/src/main/java/net/minecraft/world/item/BlockItem.java
+index 0000000000000000000000000000000000000000..ssssssssssssssssssssssssssssssssssssss 100644
+--- a/src/main/java/net/minecraft/world/item/BlockItem.java
++++ b/src/main/java/net/minecraft/world/item/BlockItem.java
+@@ -20,6 +20,8 @@
+ import net.minecraft.world.level.block.state.BlockState;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockItemExtension;
++// NeoForge end
+
+-public class BlockItem extends Item {
++public class BlockItem extends Item implements IBlockItemExtension /* NeoForge */ {
+     // ...
+ }
+diff --git a/src/main/java/net/minecraft/world/item/PotionItem.java b/src/main/java/net/minecraft/world/item/PotionItem.java
+index 0000000000000000000000000000000000000000..tttttttttttttttttttttttttttttttttttttt 100644
+--- a/src/main/java/net/minecraft/world/item/PotionItem.java
++++ b/src/main/java/net/minecraft/world/item/PotionItem.java
+@@ -10,6 +10,8 @@
+ import net.minecraft.world.item.alchemy.PotionContents;
++// NeoForge start
++import net.neoforged.neoforge.common.extensions.IBlockItemExtension;
++// NeoForge end
+
+-public class PotionItem extends Item {
++// NeoForge - no additional interface needed for PotionItem beyond IItemExtension

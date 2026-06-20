@@ -34,8 +34,8 @@ public final class Main {
     );
     private static final List<String> SERVER_ARGS = List.of(
         "--nogui",
-        "--fml.mcVersion", "26.1.2",
-        "--fml.neoForgeVersion", "26.1.2",
+        "--fml.mcVersion", "1.21.1",
+        "--fml.neoForgeVersion", "21.1.79",
         "--fml.neoFormVersion", "1"
     );
 

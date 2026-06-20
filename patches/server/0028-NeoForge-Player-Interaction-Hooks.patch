@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Player Interaction Hooks
+
+Injects NeoForge player interaction hooks:
+- Player.attack() — AttackEntityEvent, CriticalHitEvent, SweepAttack
+- ServerGamePacketListenerImpl — LeftClickBlock, RightClickBlock, RightClickItem
+- Player.interact() — EntityInteract, EntityInteractSpecific
+- Player.useItem() — PlayerInteractEvent.RightClickItem
+- ServerPlayerGameMode.useItemOn() — RightClickBlock detailed
+
+All interaction events fire on the player's owning region thread.
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index 7777777777777777777777777777777777777777..6666666666666666666666666666666666666666 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1200,6 +1200,10 @@
+     public void attack(Entity target) {
++        // NeoForge start - fire AttackEntityEvent
++        CommonHooks.onPlayerAttackTarget(this, target);
++        // NeoForge end
+         if (target.isAttackable()) {
+@@ -1220,6 +1224,10 @@
+             if (flag2) {
++                // NeoForge start - fire CriticalHitEvent
++                if (!CommonHooks.fireCriticalHit(this, target, true)) flag2 = false;
++                // NeoForge end
+                 if (i > 0.0F) {
+@@ -1265,6 +1273,10 @@
+             for (LivingEntity livingentity : list) {
++                // NeoForge start - fire SweepAttackEvent
++                if (!CommonHooks.fireSweepAttack(this, livingentity)) continue;
++                // NeoForge end
+                 if (livingentity != this && livingentity != target &&

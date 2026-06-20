@@ -1,0 +1,139 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Z User <z@container>
+Date: Sat, 20 Jun 2026 20:08:02 +0000
+Subject: [PATCH] NeoForge Additional Event Hooks
+
+Add NeoForge CommonHooks/EventHooks calls to vanilla classes:
+- LivingEntity: LivingHealEvent, LivingDeathEvent, LivingFallEvent, LivingJumpEvent
+- ItemEntity: ItemEntityPickupEvent.Pre, ItemExpireEvent
+- Projectile: ProjectileImpactEvent
+- ItemStack: ItemTooltipEvent
+
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index c746e9dbc52ce75d1fc89c750900828462c49686..72b96e8733a0302ecaf38d25eda2660a39c9fe1f 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -136,6 +136,7 @@ import org.slf4j.Logger;
+ // NeoForge start - entity tick events
+ import net.neoforged.neoforge.event.EventHooks;
+ import net.neoforged.neoforge.event.tick.EntityTickEvent;
++import net.neoforged.neoforge.common.CommonHooks;
+ // NeoForge end
+ 
+ // CraftBukkit start
+@@ -1378,6 +1379,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
+ 
+     public void heal(float f, EntityRegainHealthEvent.RegainReason regainReason, boolean isFastRegen) {
+         // Paper end
++        // NeoForge start - fire LivingHealEvent (cancelable)
++        f = EventHooks.onLivingHeal(this, f);
++        if (f <= 0) return;
++        // NeoForge end
+         float f1 = this.getHealth();
+ 
+         if (f1 > 0.0F) {
+@@ -1775,6 +1780,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
+ 
+     public void die(DamageSource damageSource) {
+         if (!this.isRemoved() && !this.dead) {
++            // NeoForge start - fire LivingDeathEvent (cancelable)
++            if (CommonHooks.onLivingDeath(this, damageSource)) return;
++            // NeoForge end
+             Entity entity = damageSource.getEntity();
+             LivingEntity entityliving = this.getKillCredit();
+ 
+@@ -2134,6 +2142,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     @Override
+     public boolean causeFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
+         boolean flag = super.causeFallDamage(fallDistance, damageMultiplier, damageSource);
++        // NeoForge start - fire LivingFallEvent
++        CommonHooks.onLivingFall(this, fallDistance, damageMultiplier, damageSource);
++        // NeoForge end
+         int i = this.calculateFallDamage(fallDistance, damageMultiplier);
+ 
+         if (i > 0) {
+@@ -2851,6 +2862,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     protected long lastJumpTime = 0L; // Paper - Prevent excessive velocity through repeated crits
+     @VisibleForTesting
+     public void jumpFromGround() {
++        CommonHooks.onLivingJump(this); // NeoForge - fire LivingJumpEvent
+         float f = this.getJumpPower();
+ 
+         if (f > 1.0E-5F) {
+diff --git a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+index 9955d553dc016751edc50d9c8134cc1bb16c025e..820674e93c6fb32a84a9213af9f7e8eceb0f3baf 100644
+--- a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+@@ -29,6 +29,7 @@ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.gameevent.GameEvent;
+ import net.minecraft.world.level.portal.DimensionTransition;
+ import net.minecraft.world.phys.Vec3;
++import net.neoforged.neoforge.event.EventHooks; // NeoForge
+ // CraftBukkit start
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.ServerLevel;
+@@ -232,6 +233,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
+                     return;
+                 }
+                 // CraftBukkit end
++                // NeoForge start - fire ItemExpireEvent
++                EventHooks.onItemExpire(this);
++                // NeoForge end
+                 this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
+             }
+ 
+@@ -465,6 +469,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
+ 
+     @Override
+     public void playerTouch(net.minecraft.world.entity.player.Player player) {
++        // NeoForge start - fire ItemEntityPickupEvent.Pre (cancelable)
++        if (EventHooks.fireItemPickupPre(this, player)) return;
++        // NeoForge end
+         if (!this.level().isClientSide) {
+             ItemStack itemstack = this.getItem();
+             Item item = itemstack.getItem();
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/Projectile.java b/src/main/java/net/minecraft/world/entity/projectile/Projectile.java
+index 0e831070fe7a9ac58de4b25b74a53b38334c695a..2d350e92748e8e337004ee76eae47a4d3a4b8a11 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/Projectile.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/Projectile.java
+@@ -29,6 +29,7 @@ import net.minecraft.world.phys.BlockHitResult;
+ import net.minecraft.world.phys.EntityHitResult;
+ import net.minecraft.world.phys.HitResult;
+ import net.minecraft.world.phys.Vec3;
++import net.neoforged.neoforge.event.EventHooks; // NeoForge
+ // CraftBukkit start
+ import org.bukkit.projectiles.ProjectileSource;
+ // CraftBukkit end
+@@ -272,6 +273,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
+     protected void onDeflection(@Nullable Entity deflector, boolean fromAttack) {}
+ 
+     protected void onHit(HitResult hitResult) {
++        // NeoForge start - fire ProjectileImpactEvent (cancelable)
++        if (EventHooks.onProjectileImpact(this, hitResult)) return;
++        // NeoForge end
+         HitResult.Type movingobjectposition_enummovingobjecttype = hitResult.getType();
+ 
+         if (movingobjectposition_enummovingobjecttype == HitResult.Type.ENTITY) {
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 176ff4c3f367f2359303f7cd09d65b6adbc00a40..7027faae6dfd69ff39cc15e8802f5c9ab45b0d13 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -88,6 +88,7 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
+ import net.minecraft.world.level.saveddata.maps.MapId;
+ import org.apache.commons.lang3.mutable.MutableBoolean;
+ import org.slf4j.Logger;
++import net.neoforged.neoforge.event.EventHooks; // NeoForge
+ 
+ // CraftBukkit start
+ import java.util.Map;
+@@ -1115,6 +1116,10 @@ public final class ItemStack implements DataComponentHolder {
+                 list.add(ItemStack.DISABLED_ITEM_TOOLTIP);
+             }
+ 
++            // NeoForge start - fire ItemTooltipEvent
++            EventHooks.onItemTooltip(this, player, list, type, context);
++            // NeoForge end
++
+             return list;
+         }
+     }

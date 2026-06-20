@@ -1,0 +1,158 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Z User <z@container>
+Date: Sat, 20 Jun 2026 17:29:39 +0000
+Subject: [PATCH] NeoForge EventHooks Integration
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 90d78ddf8518c0df307cdaa8b7cfb5549491c6e5..46998045a6342750ad0c4bb9af9fa7e18e6eec84 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -172,6 +172,9 @@ import net.minecraft.world.phys.shapes.Shapes;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ import net.minecraft.world.ticks.LevelTicks;
+ import org.slf4j.Logger;
++// NeoForge start - event hooks
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+ import org.bukkit.Bukkit;
+ import org.bukkit.WeatherType;
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
+@@ -709,6 +712,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.
+ 
+     public void tick(BooleanSupplier shouldKeepTicking, io.papermc.paper.threadedregions.TickRegions.TickRegionData region) { // Folia - regionised ticking
+         final io.papermc.paper.threadedregions.RegionizedWorldData regionizedWorldData = this.getCurrentWorldData(); // Folia - regionised ticking
++        EventHooks.fireLevelTickPre(this, shouldKeepTicking); // NeoForge - fire LevelTickEvent.Pre
+         final ca.spottedleaf.leafprofiler.RegionizedProfiler.Handle profiler = io.papermc.paper.threadedregions.TickRegionScheduler.getProfiler(); // Folia - profiler
+         ProfilerFiller gameprofilerfiller = this.getProfiler();
+ 
+@@ -775,6 +779,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ca.spottedleaf.
+ 
+         regionizedWorldData.setHandlingTick(false); // Folia - regionised ticking
+         gameprofilerfiller.pop();
++        EventHooks.fireLevelTickPost(this, shouldKeepTicking); // NeoForge - fire LevelTickEvent.Post
+         boolean flag1 = true || !this.players.isEmpty() || !this.getForcedChunks().isEmpty(); // CraftBukkit - this prevents entity cleanup, other issues on servers with no players // Paper - restore this // Folia - unrestore this, we always need to tick empty worlds
+ 
+         if (flag1) {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 9acb477df682a27b4340e4068d6b81df1925fc0b..2c2a14dcfb88379e83ba5d875fc0bc268d1fbd0c 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -103,6 +103,9 @@ import net.minecraft.world.scores.DisplaySlot;
+ import net.minecraft.world.scores.Objective;
+ import net.minecraft.world.scores.PlayerTeam;
+ import org.slf4j.Logger;
++// NeoForge start - player event hooks
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+ 
+ // CraftBukkit start
+ import java.util.stream.Collectors;
+@@ -488,6 +491,7 @@ public abstract class PlayerList {
+         //player.refreshEntityData(player); // CraftBukkit - BungeeCord#2321, send complete data to self on spawn // Paper - THIS IS NOT NEEDED ANYMORE
+ 
+         this.sendLevelInfo(player, worldserver1);
++        EventHooks.firePlayerLoggedIn(player); // NeoForge - fire PlayerLoggedInEvent
+ 
+         // CraftBukkit start - Only add if the player wasn't moved in the event
+         if (player.level() == worldserver1 && !worldserver1.players().contains(player)) {
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 9b8fd458c851d72901568845d973330ed58260a9..c746e9dbc52ce75d1fc89c750900828462c49686 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -133,6 +133,10 @@ import net.minecraft.world.phys.Vec3;
+ import net.minecraft.world.scores.PlayerTeam;
+ import net.minecraft.world.scores.Scoreboard;
+ import org.slf4j.Logger;
++// NeoForge start - entity tick events
++import net.neoforged.neoforge.event.EventHooks;
++import net.neoforged.neoforge.event.tick.EntityTickEvent;
++// NeoForge end
+ 
+ // CraftBukkit start
+ import java.util.ArrayList;
+@@ -3149,6 +3153,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     @Override
+     public void tick() {
+         super.tick();
++        EntityTickEvent.Pre tickPre = EventHooks.fireEntityTickPre(this); // NeoForge - fire EntityTickEvent.Pre
++        if (tickPre.isCanceled()) return; // NeoForge - honor cancellation
+         this.updatingUsingItem();
+         this.updateSwimAmount();
+         if (!this.level().isClientSide) {
+@@ -3257,6 +3263,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+             this.appliedScale = f4;
+             this.refreshDimensions();
+         }
++        EventHooks.fireEntityTickPost(this); // NeoForge - fire EntityTickEvent.Post
+ 
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index b3377ed06d703f54e01ba174e5a06dc928cdff96..8412e9bb5a79926b30b0f96ecc409fbd07aacdf3 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -114,6 +114,9 @@ import net.minecraft.world.phys.Vec3;
+ import net.minecraft.world.scores.PlayerTeam;
+ import net.minecraft.world.scores.Scoreboard;
+ import org.slf4j.Logger;
++// NeoForge start - player tick events
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.craftbukkit.util.CraftVector;
+@@ -253,6 +256,7 @@ public abstract class Player extends LivingEntity {
+     @Override
+     public void tick() {
+         this.noPhysics = this.isSpectator();
++        EventHooks.firePlayerTickPre(this); // NeoForge - fire PlayerTickEvent.Pre
+         if (this.isSpectator()) {
+             this.setOnGround(false);
+         }
+@@ -331,6 +335,7 @@ public abstract class Player extends LivingEntity {
+         this.turtleHelmetTick();
+         this.cooldowns.tick();
+         this.updatePlayerPose();
++        EventHooks.firePlayerTickPost(this); // NeoForge - fire PlayerTickEvent.Post
+         if (this.currentImpulseContextResetGraceTime > 0) {
+             --this.currentImpulseContextResetGraceTime;
+         }
+diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
+index e642638f70dffab027f8c538889e3b17da1c29df..d2dfbcd5aa578e492b57588e77a95deb6a5e0e32 100644
+--- a/src/main/java/net/minecraft/world/level/Explosion.java
++++ b/src/main/java/net/minecraft/world/level/Explosion.java
+@@ -48,6 +48,9 @@ import org.bukkit.event.entity.EntityExplodeEvent;
+ import org.bukkit.Location;
+ import org.bukkit.event.block.BlockExplodeEvent;
+ // CraftBukkit end
++// NeoForge start - explosion event hooks
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+ 
+ public class Explosion {
+ 
+@@ -408,6 +411,11 @@ public class Explosion {
+             return;
+         }
+         // CraftBukkit end
++        // NeoForge start - fire ExplosionEvent.Start
++        if (EventHooks.onExplosionStart(this.level, this)) {
++            return; // Explosion was canceled by a mod
++        }
++        // NeoForge end
+         this.level.gameEvent(this.source, (Holder) GameEvent.EXPLODE, new Vec3(this.x, this.y, this.z));
+ 
+         // Paper start - collision optimisations
+@@ -526,6 +534,11 @@ public class Explosion {
+         final BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+         // Paper end - optimise collisions
+ 
++        // NeoForge start - fire ExplosionEvent.Detonate
++        EventHooks.onExplosionDetonate(
++            this.level, this, list, new java.util.ArrayList<>(this.toBlow));
++        // NeoForge end
++
+         while (iterator.hasNext()) {
+             Entity entity = (Entity) iterator.next();
+ 

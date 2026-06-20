@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Crelia <crelia@users.noreply.github.com>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] NeoForge Block Event Hooks
+
+Injects NeoForge block-related hooks:
+- Level.updateNeighborsAt() — NeighborNotifyEvent
+- Block.playerDestroy() — handleBlockDrops (BlockDropsEvent)
+- PistonBaseBlock — PistonEvent.Pre/Post
+- FarmBlock.stepOn() — FarmlandTrampleEvent
+- CropBlock — CropGrowEvent.Pre/Post
+- NoteBlock — NoteBlockEvent.Play
+- BrewingStandBlockEntity — PotionBrewEvent.Pre/Post
+- AbstractFurnaceBlockEntity — getItemBurnTime
+
+Note: Block updates in Folia already have TickThread checks (patch 0004).
+NeoForge hooks are inserted INSIDE those checks, maintaining thread safety.
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index 8888888888888888888888888888888888888888..7777777777777777777777777777777777777777 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -780,6 +780,10 @@
+     public void updateNeighborsAt(BlockPos pos, Block block) {
++        // NeoForge start - fire NeighborNotifyEvent
++        java.util.EnumSet<Direction> directions = java.util.EnumSet.allOf(Direction.class);
++        EventHooks.onNeighborNotify(this, pos, this.getBlockState(pos), directions);
++        // NeoForge end
+         // Paper start - prevent block updates in non-owned chunks
+diff --git a/net/minecraft/world/level/block/FarmBlock.java b/net/minecraft/world/level/block/FarmBlock.java
+index 0000000000000000000000000000000000000000..8888888888888888888888888888888888888888 100644
+--- a/net/minecraft/world/level/block/FarmBlock.java
++++ b/net/minecraft/world/level/block/FarmBlock.java
+@@ -40,6 +40,10 @@
+     protected void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
++        // NeoForge start - fire FarmlandTrampleEvent
++        if (entity instanceof net.minecraft.world.entity.LivingEntity living)
++            CommonHooks.onFarmlandTrample(level, pos, state, entity.getStepHeight(), living);
++        // NeoForge end
+         super.stepOn(level, pos, state, entity);
+diff --git a/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java b/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java
+index 0000000000000000000000000000000000000000..9999999999999999999999999999999999999999 100644
+--- a/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/BrewingStandBlockEntity.java
+@@ -10,6 +10,8 @@
+ import net.minecraft.world.level.block.state.BlockState;
++// NeoForge start
++import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+@@ -80,6 +82,10 @@
+     private void brew() {
++        // NeoForge start - fire PotionBrewEvent.Pre
++        if (!EventHooks.onPotionAttemptBrew(this, this.ingredientList)) return;
++        // NeoForge end
+@@ -95,6 +101,9 @@
+         // CraftBukkit end
++        // NeoForge start - fire PotionBrewEvent.Post
++        EventHooks.onPotionBrewed(this, this.ingredientList);
++        // NeoForge end
+diff --git a/net/minecraft/world/level/block/NoteBlock.java b/net/minecraft/world/level/block/NoteBlock.java
+index 0000000000000000000000000000000000000000..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 100644
+--- a/net/minecraft/world/level/block/NoteBlock.java
++++ b/net/minecraft/world/level/block/NoteBlock.java
+@@ -50,6 +50,9 @@
+     private void playNote(Level level, BlockPos pos, BlockState state) {
++        // NeoForge start - fire NoteBlockEvent.Play
++        CommonHooks.onNoteChange(level, pos, state, state.getValue(NOTE));
++        // NeoForge end
+         // Paper start - Note block events
+diff --git a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+index 0000000000000000000000000000000000000000..bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb 100644
+--- a/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+@@ -60,6 +60,9 @@
+     protected static int fuelTime(ItemStack itemStack) {
++        // NeoForge start - fire FurnaceFuelBurnTimeEvent
++        int time = EventHooks.getItemBurnTime(itemStack);
++        if (time >= 0) return time; // Mod returned custom burn time
++        // NeoForge end

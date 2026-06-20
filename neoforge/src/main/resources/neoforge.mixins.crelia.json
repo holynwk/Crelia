@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "crelia.mixin",
+  "priority": 1000,
+  "mixins": [
+    "server.ServerLevelMixin",
+    "server.MinecraftServerMixin",
+    "server.PlayerListMixin",
+    "server.ServerChunkCacheMixin",
+    "entity.EntityMixin",
+    "entity.LivingEntityMixin",
+    "entity.PlayerMixin",
+    "world.block.BlockMixin",
+    "world.block.BlockEntityMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
