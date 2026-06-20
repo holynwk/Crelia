@@ -16,10 +16,10 @@ Injects NeoForge hooks for:
 
 All hooks are thread-safe in Crelia's region threading model.
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -850,6 +850,9 @@
+@@ -850,2 +850,10 @@
          return this;
      }
 +    // NeoForge start - fire DifficultyChangeEvent
@@ -31,17 +31,16 @@ index 0000000000000000000000000000000000000000..11111111111111111111111111111111
 +    // NeoForge end
 +
 diff --git a/src/main/java/net/minecraft/server/ServerResources.java b/src/main/java/net/minecraft/server/ServerResources.java
-index 0000000000000000000000000000000000000000..2222222222222222222222222222222222222222 100644
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/ServerResources.java
 +++ b/src/main/java/net/minecraft/server/ServerResources.java
-@@ -30,6 +30,10 @@
+@@ -30,2 +30,5 @@
  import net.minecraft.world.level.Level;
  import org.slf4j.Logger;
 +// NeoForge start - resource reload hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-
-@@ -60,6 +64,9 @@
+@@ -60,4 +64,7 @@
      public static net.minecraft.server.ServerResources loadResources(
          // NeoForge start - fire ReloadableServerResourcesListener and ResourceReloadEvent
 +        // Called after resources are loaded to notify mods of the reload
@@ -50,32 +49,30 @@ index 0000000000000000000000000000000000000000..22222222222222222222222222222222
          return resources;
      }
 diff --git a/src/main/java/net/minecraft/world/item/CreativeModeTab.java b/src/main/java/net/minecraft/world/item/CreativeModeTab.java
-index 0000000000000000000000000000000000000000..3333333333333333333333333333333333333333 100644
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/CreativeModeTab.java
 +++ b/src/main/java/net/minecraft/world/item/CreativeModeTab.java
-@@ -60,6 +60,10 @@
+@@ -60,1 +60,4 @@
  import org.slf4j.Logger;
 +// NeoForge start
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-
-@@ -150,6 +154,9 @@
+@@ -150,2 +154,5 @@
      public void buildContents(net.minecraft.world.item.CreativeModeTab.Output entries) {
 +        // NeoForge start - allow mods to add items to creative tabs
 +        net.neoforged.neoforge.event.EventHooks.onCreativeModeTabBuildContents(this, entries);
 +        // NeoForge end
          // vanilla buildContents logic follows
 diff --git a/src/main/java/net/minecraft/world/item/Item.java b/src/main/java/net/minecraft/world/item/Item.java
-index 0000000000000000000000000000000000000000..4444444444444444444444444444444444444444 100644
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/Item.java
 +++ b/src/main/java/net/minecraft/world/item/Item.java
-@@ -120,6 +120,10 @@
+@@ -120,1 +120,4 @@
  import org.slf4j.Logger;
 +// NeoForge start
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-
-@@ -350,6 +354,11 @@
+@@ -350,3 +354,7 @@
      public int getEnchantmentLevel(net.minecraft.world.item.enchantment.ItemEnchantments enchantments, net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> enchantment) {
 +        // NeoForge start - allow mods to override enchantment levels
 +        int level = EventHooks.getEnchantmentLevelSpecific(this, enchantments, enchantment);
@@ -84,10 +81,10 @@ index 0000000000000000000000000000000000000000..44444444444444444444444444444444
          return enchantments.getLevel(enchantment);
      }
 diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
-index 0000000000000000000000000000000000000000..5555555555555555555555555555555555555555 100644
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/ItemStack.java
 +++ b/src/main/java/net/minecraft/world/item/ItemStack.java
-@@ -500,6 +500,11 @@
+@@ -500,2 +500,7 @@
      public net.minecraft.world.item.enchantment.ItemEnchantments getEnchantments() {
 +        // NeoForge start - allow mods to inject additional enchantments
 +        net.minecraft.world.item.enchantment.ItemEnchantments modified =
@@ -95,7 +92,7 @@ index 0000000000000000000000000000000000000000..55555555555555555555555555555555
 +        if (modified != null) return modified;
 +        // NeoForge end
          // vanilla enchantments logic
-@@ -780,6 +785,10 @@
+@@ -780,3 +785,7 @@
      @Nullable
      public String getCreatorModId() {
 +        // NeoForge start - determine the mod that created this item
@@ -103,8 +100,7 @@ index 0000000000000000000000000000000000000000..55555555555555555555555555555555
 +        if (modId != null) return modId;
 +        // NeoForge end
          // vanilla logic for determining creator mod
-
-@@ -1100,6 +1109,10 @@
+@@ -1100,2 +1109,6 @@
      public java.util.List<net.minecraft.core.AttributeModifier> getAttributeModifiers(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.AttributeModifier> slotType, net.minecraft.world.item.ItemStack stack) {
 +        // NeoForge start - allow mods to add attribute modifiers
 +        java.util.List<net.minecraft.core.AttributeModifier> modifiers = new java.util.ArrayList<>();
@@ -112,23 +108,21 @@ index 0000000000000000000000000000000000000000..55555555555555555555555555555555
 +        // NeoForge end
          // vanilla attribute modifiers logic
 diff --git a/src/main/java/net/minecraft/client/resources/Language.java b/src/main/java/net/minecraft/client/resources/Language.java
-index 0000000000000000000000000000000000000000..6666666666666666666666666666666666666666 100644
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/client/resources/Language.java
 +++ b/src/main/java/net/minecraft/client/resources/Language.java
-@@ -20,6 +20,10 @@
+@@ -20,1 +20,4 @@
  import org.slf4j.Logger;
 +// NeoForge start
 +import net.neoforged.neoforge.common.LanguageHook;
 +// NeoForge end
-
-@@ -55,6 +59,9 @@
+@@ -55,2 +59,5 @@
      public static void loadDefault() {
 +        // NeoForge start - load builtin mod languages before loading en_us
 +        LanguageHook.loadBuiltinLanguages();
 +        // NeoForge end
          // vanilla loadDefault logic
-
-@@ -75,6 +82,9 @@
+@@ -75,2 +82,5 @@
      private void inject(net.minecraft.client.resources.Language.LanguageReloadHelper helper, boolean overlay) {
 +        // NeoForge start - capture language map after loading
 +        LanguageHook.captureLanguageMap(this);
