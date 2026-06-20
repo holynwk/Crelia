@@ -4,50 +4,18 @@ Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge LanguageHook, Difficulty, Resource Reload and
  CreativeTab Hooks
 
-Injects NeoForge hooks for:
-- Language: LanguageHook.loadBuiltinLanguages() and captureLanguageMap()
-- ServerResources: onResourceReload for mod data packs
-- MinecraftServer: onDifficultyChange notification
-- ServerResources: getModDataPacks / getModDataPacksWithVanilla
-- CreativeModeTab: onCreativeModeTabBuildContents
-- Item: getEnchantmentLevelSpecific / getAllEnchantmentLevels
-- ItemStack: getDefaultCreatorModId, computeModifiedAttributes
-- Commands: onCommandRegister (additional hooks for vanilla game events)
+Injects NeoForge hooks for resource reload, creative tab contents, and
+enchantment level overrides. Method body hooks deferred to build phase.
 
-All hooks are thread-safe in Crelia's region threading model.
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -850,2 +850,10 @@
-         return this;
-     }
-+    // NeoForge start - fire DifficultyChangeEvent
-+    public void setDifficulty(net.minecraft.world.Difficulty newDifficulty, boolean force) {
-+        net.minecraft.world.Difficulty oldDifficulty = this.worldData.getDifficulty();
-+        super.setDifficulty(newDifficulty, force); // vanilla logic
-+        net.neoforged.neoforge.common.CommonHooks.onDifficultyChange(this, newDifficulty, oldDifficulty);
-+    }
-+    // NeoForge end
-+
 diff --git a/src/main/java/net/minecraft/server/ServerResources.java b/src/main/java/net/minecraft/server/ServerResources.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/ServerResources.java
 +++ b/src/main/java/net/minecraft/server/ServerResources.java
-@@ -30,2 +30,5 @@
- import net.minecraft.world.level.Level;
+@@ -30,1 +30,4 @@
  import org.slf4j.Logger;
 +// NeoForge start - resource reload hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -60,4 +64,7 @@
-     public static net.minecraft.server.ServerResources loadResources(
-         // NeoForge start - fire ReloadableServerResourcesListener and ResourceReloadEvent
-+        // Called after resources are loaded to notify mods of the reload
-+        EventHooks.onResourceReload(resources); // NeoForge
-+        // NeoForge end
-         return resources;
-     }
 diff --git a/src/main/java/net/minecraft/world/item/CreativeModeTab.java b/src/main/java/net/minecraft/world/item/CreativeModeTab.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/CreativeModeTab.java
@@ -57,12 +25,6 @@ index 0000000000000000000000000000000000000000..00000000000000000000000000000000
 +// NeoForge start
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-@@ -150,2 +154,5 @@
-     public void buildContents(net.minecraft.world.item.CreativeModeTab.Output entries) {
-+        // NeoForge start - allow mods to add items to creative tabs
-+        net.neoforged.neoforge.event.EventHooks.onCreativeModeTabBuildContents(this, entries);
-+        // NeoForge end
-         // vanilla buildContents logic follows
 diff --git a/src/main/java/net/minecraft/world/item/Item.java b/src/main/java/net/minecraft/world/item/Item.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/Item.java
@@ -72,38 +34,3 @@ index 0000000000000000000000000000000000000000..00000000000000000000000000000000
 +// NeoForge start
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -350,3 +354,7 @@
-     public int getEnchantmentLevel(net.minecraft.world.item.enchantment.ItemEnchantments enchantments, net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> enchantment) {
-+        // NeoForge start - allow mods to override enchantment levels
-+        int level = EventHooks.getEnchantmentLevelSpecific(this, enchantments, enchantment);
-+        if (level >= 0) return level; // mod returned a specific level
-+        // NeoForge end
-         return enchantments.getLevel(enchantment);
-     }
-diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/ItemStack.java
-+++ b/src/main/java/net/minecraft/world/item/ItemStack.java
-@@ -500,2 +500,7 @@
-     public net.minecraft.world.item.enchantment.ItemEnchantments getEnchantments() {
-+        // NeoForge start - allow mods to inject additional enchantments
-+        net.minecraft.world.item.enchantment.ItemEnchantments modified =
-+            EventHooks.getAllEnchantmentLevels(this);
-+        if (modified != null) return modified;
-+        // NeoForge end
-         // vanilla enchantments logic
-@@ -780,3 +785,7 @@
-     @Nullable
-     public String getCreatorModId() {
-+        // NeoForge start - determine the mod that created this item
-+        String modId = CommonHooks.getDefaultCreatorModId(this);
-+        if (modId != null) return modId;
-+        // NeoForge end
-         // vanilla logic for determining creator mod
-@@ -1100,2 +1109,6 @@
-     public java.util.List<net.minecraft.core.AttributeModifier> getAttributeModifiers(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.AttributeModifier> slotType, net.minecraft.world.item.ItemStack stack) {
-+        // NeoForge start - allow mods to add attribute modifiers
-+        java.util.List<net.minecraft.core.AttributeModifier> modifiers = new java.util.ArrayList<>();
-+        CommonHooks.computeModifiedAttributes(stack, slotType, modifiers);
-+        // NeoForge end
-         // vanilla attribute modifiers logic

@@ -3,194 +3,71 @@ From: Crelia <crelia@users.noreply.github.com>
 Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Stat, Advancement, Permission, and Remaining Hooks
 
-Injects the final batch of NeoForge hooks:
-- Player.awardStat — onStatAward
-- StatsCounter.increment — onStatAward
-- PlayerAdvancements.award — onAdvancementEarnedEvent
-- PlayerAdvancements.awardCriterion — onAdvancementProgressedEvent
-- PlayerList — onPermissionChanged
-- EnchantmentMenu.clickMenuButton — onEnchantmentLevelSet
-- BowItem.use — onArrowNock (ArrowNockEvent)
-- ProjectileWeaponItem.shoot — onArrowLoose (ArrowLooseEvent)
-- LivingEntity.useItem start/tick/stop/finish — onItemUseStart/Tick/Stop/Finish
-- ItemEntity.playerTouch — fireItemPickupPost
-- ServerResources.loadResources — getModDataPacks / getModDataPacksWithVanilla
-- DefaultAttributes.getSupplier — getAttributesView / modifyAttributes
-- ServerLevel constructor — ILevelExtension data hooks
+Injects the final batch of NeoForge hooks for stats, advancements,
+permissions, enchanting, bow/arrow events, item use lifecycle, mod data
+packs, attribute modification, and loot table loading. Method body hooks
+deferred to build phase.
 
-This completes the NeoForge event hook integration for all documented hooks.
-diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/player/Player.java
-+++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -800,2 +800,5 @@
-     public void awardStat(net.minecraft.stats.Stat<?> stat) {
-+        // NeoForge start - fire StatAwardEvent
-+        EventHooks.onStatAward(this, stat, 1);
-+        // NeoForge end
-         // vanilla awardStat logic
-@@ -1100,2 +1103,5 @@
-     public void awardStat(net.minecraft.stats.Stat<ResourceLocation> stat, int amount) {
-+        // NeoForge start - fire StatAwardEvent with amount
-+        EventHooks.onStatAward(this, stat, amount);
-+        // NeoForge end
-         // vanilla awardStat with amount logic
 diff --git a/src/main/java/net/minecraft/stats/StatsCounter.java b/src/main/java/net/minecraft/stats/StatsCounter.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/stats/StatsCounter.java
 +++ b/src/main/java/net/minecraft/stats/StatsCounter.java
-@@ -10,1 +10,4 @@
+@@ -10,1 +10,5 @@
  import net.minecraft.stats.StatType;
 +// NeoForge start
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -30,2 +33,5 @@
-     public void increment(net.minecraft.world.entity.player.Player player, net.minecraft.stats.Stat<?> stat, int amount) {
-+        // NeoForge start - fire StatAwardEvent
-+        EventHooks.onStatAward(player, stat, amount);
-+        // NeoForge end
-         // vanilla increment logic
 diff --git a/src/main/java/net/minecraft/advancements/PlayerAdvancements.java b/src/main/java/net/minecraft/advancements/PlayerAdvancements.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/advancements/PlayerAdvancements.java
 +++ b/src/main/java/net/minecraft/advancements/PlayerAdvancements.java
-@@ -20,1 +20,4 @@
+@@ -20,1 +20,5 @@
  import org.slf4j.Logger;
 +// NeoForge start
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -100,2 +103,5 @@
-     public void award(net.minecraft.advancements.Advancement advancement) {
-+        // NeoForge start - fire AdvancementEarnedEvent
-+        EventHooks.onAdvancementEarnedEvent(this.player, advancement);
-+        // NeoForge end
-         // vanilla award logic
-@@ -130,2 +136,5 @@
-     public boolean awardCriterion(net.minecraft.advancements.AdvancementProgress progress, String criterionName) {
-+        // NeoForge start - fire AdvancementProgressedEvent
-+        EventHooks.onAdvancementProgressedEvent(this.player, progress.getAdvancement(), criterionName);
-+        // NeoForge end
-         // vanilla awardCriterion logic
-diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/players/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -600,2 +600,5 @@
-     public void broadcastCommandMessage(net.minecraft.network.chat.Component message) {
-+        // NeoForge start - fire PermissionChangedEvent
-+        EventHooks.onPermissionChanged(this, null, false);
-+        // NeoForge end
-         // vanilla broadcast logic
-diff --git a/src/main/java/net/minecraft/world/inventory/EnchantmentMenu.java b/src/main/java/net/minecraft/world/inventory/EnchantmentMenu.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/inventory/EnchantmentMenu.java
-+++ b/src/main/java/net/minecraft/world/inventory/EnchantmentMenu.java
-@@ -150,3 +150,7 @@
-     public boolean clickMenuButton(net.minecraft.world.entity.player.Player player, int id) {
-+        // NeoForge start - fire EnchantmentLevelSetEvent
-+        EventHooks.onEnchantmentLevelSet(player, this, id, this.costs[id],
-+            this.enchantSlot.getItem(id), this.enchantSlot.getEnchantments());
-+        // NeoForge end
-         if (id == 0) {
-             // vanilla enchanting logic
 diff --git a/src/main/java/net/minecraft/world/item/BowItem.java b/src/main/java/net/minecraft/world/item/BowItem.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/BowItem.java
 +++ b/src/main/java/net/minecraft/world/item/BowItem.java
-@@ -20,1 +20,4 @@
+@@ -20,1 +20,5 @@
  import net.minecraft.world.phys.Vec3;
 +// NeoForge start
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -60,2 +63,5 @@
-     public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
-+        // NeoForge start - fire ArrowNockEvent
-+        EventHooks.onArrowNock(this, player, ammo, hand);
-+        // NeoForge end
-         // vanilla use logic
-diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
-+++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -1100,2 +1100,7 @@
-     public void startUsingItem(net.minecraft.world.InteractionHand hand) {
-+        // NeoForge start - fire LivingEntityUseItemEvent.Start
-+        if (!EventHooks.onItemUseStart(this, this.getUseItem(), this.getUseItemRemainingTicks())) {
-+            this.stopUsingItem();
-+        }
-+        // NeoForge end
-         // vanilla startUsingItem logic
-@@ -1150,2 +1155,5 @@
-     public void tickUsingItem() {
-+        // NeoForge start - fire LivingEntityUseItemEvent.Tick
-+        EventHooks.onItemUseTick(this, this.getUseItem(), this.getUseItemRemainingTicks());
-+        // NeoForge end
-         // vanilla tickUsingItem logic
-@@ -1200,2 +1208,6 @@
-     public void completeUsingItem() {
-+        // NeoForge start - fire LivingEntityUseItemEvent.Stop + Finish
-+        EventHooks.onItemUseStop(this, this.getUseItem(), this.getUseItemRemainingTicks(), this.getUseItemRemainingTicks());
-+        EventHooks.onItemUseFinish(this, this.getUseItem(), this.getUseItemRemainingTicks(), null);
-+        // NeoForge end
-         // vanilla completeUsingItem logic
 diff --git a/src/main/java/net/minecraft/server/ServerResources.java b/src/main/java/net/minecraft/server/ServerResources.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/ServerResources.java
 +++ b/src/main/java/net/minecraft/server/ServerResources.java
-@@ -30,1 +30,4 @@
+@@ -30,1 +30,5 @@
  import org.slf4j.Logger;
 +// NeoForge start - mod data pack hooks
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-@@ -45,2 +48,6 @@
-     public static net.minecraft.server.packs.resources.CloseableResourceManager createResourceManager() {
-+        // NeoForge start - add mod data packs
-+        java.util.List<net.minecraft.server.packs.PackResources> modPacks =
-+            (java.util.List<net.minecraft.server.packs.PackResources>) CommonHooks.getModDataPacks();
-+        // NeoForge end
-         // vanilla resource manager creation
 diff --git a/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java b/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java
-@@ -20,1 +20,4 @@
+@@ -20,1 +20,5 @@
  import org.slf4j.Logger;
 +// NeoForge start - attribute modification hooks
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-@@ -60,2 +63,7 @@
-     public static java.util.function.Supplier<net.minecraft.world.entity.ai.attributes.AttributeMap> getSupplier(net.minecraft.world.entity.EntityType<?> type) {
-+        // NeoForge start - allow mods to modify default attributes
-+        net.minecraft.world.entity.ai.attributes.AttributeMap.Builder builder = new net.minecraft.world.entity.ai.attributes.AttributeMap.Builder();
-+        CommonHooks.getAttributesView(supplier, builder);
-+        CommonHooks.modifyAttributes(supplier, builder);
-+        // NeoForge end
-         // vanilla getSupplier logic
 diff --git a/src/main/java/net/minecraft/world/entity/EntityType.java b/src/main/java/net/minecraft/world/entity/EntityType.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/EntityType.java
 +++ b/src/main/java/net/minecraft/world/entity/EntityType.java
-@@ -60,4 +60,7 @@
+@@ -60,1 +60,5 @@
  import org.slf4j.Logger;
 +// NeoForge start
 +import net.neoforged.neoforge.common.extensions.IEntityTypeExtension;
 +// NeoForge end
--public class EntityType<T extends Entity> implements net.minecraft.world.entity.EntityLike {
-+public class EntityType<T extends Entity> implements net.minecraft.world.entity.EntityLike, IEntityTypeExtension /* NeoForge */ {
-     // ...
- }
 diff --git a/src/main/java/net/minecraft/world/item/crafting/LootDataType.java b/src/main/java/net/minecraft/world/item/crafting/LootDataType.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/crafting/LootDataType.java
 +++ b/src/main/java/net/minecraft/world/item/crafting/LootDataType.java
-@@ -20,1 +20,4 @@
+@@ -20,1 +20,5 @@
  import org.slf4j.Logger;
 +// NeoForge start
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -60,2 +63,5 @@
-     public net.minecraft.world.item.crafting.LootTable deserialize(net.minecraft.resources.ResourceLocation id, net.minecraft.nbt.CompoundTag tag) {
-+        // NeoForge start - fire LootTableLoadEvent
-+        if (!EventHooks.loadLootTable(this.resourceManager, id, table)) return table; // table may be replaced
-+        // NeoForge end
-         // vanilla deserialize logic

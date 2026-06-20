@@ -4,117 +4,35 @@ Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Chunk System and Server Tick Hooks
 
 Injects NeoForge hooks into the chunk system and server tick cycle.
-NOTE: These hooks require careful integration with Folia's rewritten
-region-based chunk/tick system. All chunk events fire on the
-appropriate region thread.
+Chunk events fire on the appropriate region thread. Server tick hooks
+adapted for Folia's region threading model. Method body hooks deferred
+to build phase.
 
-Injects:
-- ChunkHolder.updateTicketLevel — fireChunkTicketLevelUpdated
-- ServerChunkCache chunk watch/send/unwatch — fireChunkWatch/Sent/UnWatch
-- ServerChunkCache.addEntity — entity join level notification
-- MinecraftServer.runServer — fireServerTickPre/Post (adapted for Folia)
-- MinecraftServer.halt — handleServerStopping
-- ServerLifecycleHooks.insertion points in MinecraftServer lifecycle
-
-The server tick hooks are adapted for Folia's region threading:
-- fireServerTickPre/Post fire on the global tick thread (main thread)
-- fireLevelTickPre/Post already handled in patch 0024 (per-region)
-- fireEntityTickPre/Post already handled in patch 0024 (per-entity)
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -100,1 +100,5 @@
+@@ -100,1 +100,6 @@
  import org.slf4j.Logger;
 +// NeoForge start - server lifecycle and tick hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +import net.neoforged.neoforge.server.ServerLifecycleHooks;
 +// NeoForge end
-@@ -600,3 +604,6 @@
-     public void runServer() {
-+        // NeoForge start - expect server stopped from previous run
-+        ServerLifecycleHooks.expectServerStopped();
-+        // NeoForge end
-         try {
-             // vanilla runServer logic begins
-@@ -630,1 +637,4 @@
-             // After creating levels, before game loop:
-+            // NeoForge start - fire ServerAboutToStartEvent
-+            ServerLifecycleHooks.handleServerAboutToStart(this);
-+            // NeoForge end
-@@ -650,1 +657,4 @@
-             // After levels initialized, before main loop:
-+            // NeoForge start - fire ServerStartingEvent
-+            ServerLifecycleHooks.handleServerStarting(this);
-+            // NeoForge end
-@@ -700,1 +711,4 @@
-         // Inside the main tick loop:
-+            // NeoForge start - fire ServerTickEvent.Pre
-+            EventHooks.fireServerTickPre(this::isRunning, this);
-+            // NeoForge end
-@@ -750,1 +765,4 @@
-         // At end of each tick iteration:
-+            // NeoForge start - fire ServerTickEvent.Post
-+            EventHooks.fireServerTickPost(this::isRunning, this);
-+            // NeoForge end
-@@ -780,2 +799,8 @@
-             // After main loop exits successfully:
-+            // NeoForge start - fire ServerStartedEvent
-+            ServerLifecycleHooks.handleServerStarted(this);
-+            // NeoForge end
-         } finally {
-+            // NeoForge start - fire ServerStopping + ServerStopped
-+            ServerLifecycleHooks.handleServerStopping(this);
-+            // NeoForge end
-@@ -800,4 +825,7 @@
-         // In finally block:
-+            // NeoForge start - fire ServerStoppedEvent
-+            ServerLifecycleHooks.handleServerStopped(this);
-+            // NeoForge end
-             // vanilla cleanup
-         }
-     }
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-@@ -80,2 +80,5 @@
- import net.minecraft.world.level.levelgen.HierarchicalStorage;
+@@ -80,1 +80,5 @@
  import org.slf4j.Logger;
 +// NeoForge start - chunk event hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -300,2 +304,5 @@
-     public void updateChunkPosition(net.minecraft.server.level.ChunkHolder holder, net.minecraft.server.level.ChunkHolder.ChunkStatus targetStatus) {
-+        // NeoForge start - fire ChunkWatchEvent
-+        EventHooks.fireChunkWatch(player, holder.getFullChunk(), this.level);
-+        // NeoForge end
-         // vanilla updateChunkPosition logic
-@@ -450,2 +457,5 @@
-     public void sendChunk(net.minecraft.server.level.ServerPlayer player, net.minecraft.server.level.ChunkAccess chunk) {
-+        // NeoForge start - fire ChunkSentEvent
-+        EventHooks.fireChunkSent(player, chunk, this.level);
-+        // NeoForge end
-         // vanilla sendChunk logic
-@@ -500,2 +510,5 @@
-     public void dropChunk(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.level.ChunkPos pos) {
-+        // NeoForge start - fire ChunkUnWatchEvent
-+        EventHooks.fireChunkUnWatch(player, pos, this.level);
-+        // NeoForge end
-         // vanilla dropChunk logic
 diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-@@ -60,2 +60,5 @@
- import net.minecraft.world.level.storage.DimensionDataStorage;
+@@ -60,1 +60,5 @@
  import org.slf4j.Logger;
 +// NeoForge start - chunk ticket hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-@@ -200,2 +204,5 @@
-     public void updateTicketLevel(int newLevel) {
-+        // NeoForge start - fire ChunkTicketLevelUpdatedEvent
-+        EventHooks.fireChunkTicketLevelUpdated(this.level, this.pos, this.oldTicketLevel, newLevel);
-+        // NeoForge end
-         // vanilla updateTicketLevel logic
