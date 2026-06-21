@@ -3,11 +3,6 @@ From: Crelia <crelia@users.noreply.github.com>
 Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Chunk System and Server Tick Hooks
 
-Injects NeoForge hooks into the chunk system and server tick cycle.
-Chunk events fire on the appropriate region thread. Server tick hooks
-adapted for Folia's region threading model. Method body hooks deferred
-to build phase.
-
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java

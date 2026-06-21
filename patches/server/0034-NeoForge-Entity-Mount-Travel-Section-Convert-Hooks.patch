@@ -1,12 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Crelia <crelia@users.noreply.github.com>
 Date: Mon, 1 Jan 2024 00:00:00 +0000
-Subject: [PATCH] NeoForge Entity Mount, Travel, Section Change, and Conversion
- Hooks
-
-Injects NeoForge hooks for entity mounting, dimension travel, section
-changes, mob conversion, and enderpearl landing. Method body hooks
-deferred to build phase.
+Subject: [PATCH] NeoForge Entity Mount Travel Section Change and Conversion Hooks
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java b/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644

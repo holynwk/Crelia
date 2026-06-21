@@ -3,10 +3,6 @@ From: Crelia <crelia@users.noreply.github.com>
 Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Injected Interfaces
 
-Adds NeoForge extension interface imports to vanilla MC classes so that
-NeoForge capability/interfaces are available on vanilla instances. Class
-signature changes (implements clauses) are deferred to build phase.
-
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
