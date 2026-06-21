@@ -3,71 +3,15 @@ From: Crelia <crelia@users.noreply.github.com>
 Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Stat, Advancement, Permission, and Remaining Hooks
 
-Injects the final batch of NeoForge hooks for stats, advancements,
-permissions, enchanting, bow/arrow events, item use lifecycle, mod data
-packs, attribute modification, and loot table loading. Method body hooks
-deferred to build phase.
+Injects the final batch of NeoForge hooks for entity type extension
+interfaces. Method body hooks deferred to build phase.
 
-diff --git a/src/main/java/net/minecraft/stats/StatsCounter.java b/src/main/java/net/minecraft/stats/StatsCounter.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/stats/StatsCounter.java
-+++ b/src/main/java/net/minecraft/stats/StatsCounter.java
-@@ -10,1 +10,5 @@
- import net.minecraft.stats.StatType;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/advancements/PlayerAdvancements.java b/src/main/java/net/minecraft/advancements/PlayerAdvancements.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/advancements/PlayerAdvancements.java
-+++ b/src/main/java/net/minecraft/advancements/PlayerAdvancements.java
-@@ -20,1 +20,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/BowItem.java b/src/main/java/net/minecraft/world/item/BowItem.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/BowItem.java
-+++ b/src/main/java/net/minecraft/world/item/BowItem.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.phys.Vec3;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/server/ServerResources.java b/src/main/java/net/minecraft/server/ServerResources.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/ServerResources.java
-+++ b/src/main/java/net/minecraft/server/ServerResources.java
-@@ -30,1 +30,5 @@
- import org.slf4j.Logger;
-+// NeoForge start - mod data pack hooks
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java b/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java
-+++ b/src/main/java/net/minecraft/world/entity/ai/attributes/DefaultAttributes.java
-@@ -20,1 +20,5 @@
- import org.slf4j.Logger;
-+// NeoForge start - attribute modification hooks
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/entity/EntityType.java b/src/main/java/net/minecraft/world/entity/EntityType.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/EntityType.java
 +++ b/src/main/java/net/minecraft/world/entity/EntityType.java
-@@ -60,1 +60,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
+@@ -63,1 +63,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IEntityTypeExtension;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/crafting/LootDataType.java b/src/main/java/net/minecraft/world/item/crafting/LootDataType.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/crafting/LootDataType.java
-+++ b/src/main/java/net/minecraft/world/item/crafting/LootDataType.java
-@@ -20,1 +20,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end

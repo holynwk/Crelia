@@ -11,27 +11,36 @@ diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListener
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -150,1 +150,6 @@
+@@ -152,1 +152,6 @@
  import org.slf4j.Logger;
 +// NeoForge start - player interaction hooks
 +import net.neoforged.neoforge.common.CommonHooks;
 +import net.neoforged.neoforge.event.EventHooks;
++// NeoForge end
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -118,1 +118,4 @@
+ // NeoForge end
++// NeoForge start - player interaction hooks
++import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java b/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
 @@ -30,1 +30,5 @@
- import net.minecraft.world.phys.Vec3;
-+// NeoForge start
+ import org.slf4j.Logger;
++// NeoForge start - game mode interaction hooks
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/BlockItem.java b/src/main/java/net/minecraft/world/level/block/BlockItem.java
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/BlockItem.java
-+++ b/src/main/java/net/minecraft/world/level/block/BlockItem.java
-@@ -25,1 +25,5 @@
- import net.minecraft.world.level.block.state.BlockState;
-+// NeoForge start
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -55,1 +55,5 @@
+ import org.slf4j.Logger;
++// NeoForge start - player interaction hooks
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end

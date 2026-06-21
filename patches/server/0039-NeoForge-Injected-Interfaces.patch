@@ -11,7 +11,7 @@ diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/jav
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -100,1 +100,5 @@
+@@ -180,1 +180,5 @@
  import org.slf4j.Logger;
 +// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IEntityExtension;
@@ -20,8 +20,8 @@ diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/ma
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -130,1 +130,6 @@
- import org.slf4j.Logger;
+@@ -141,1 +141,6 @@
+ // NeoForge end
 +// NeoForge start - injected interfaces
 +import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
 +import net.neoforged.neoforge.common.extensions.ITeleporter;
@@ -30,46 +30,37 @@ diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/m
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -110,1 +110,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
+@@ -121,1 +121,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IPlayerExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -30,1 +30,5 @@
- import net.minecraft.server.players.PlayerList;
-+// NeoForge start
+@@ -34,1 +34,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IServerPlayerExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/item/ItemStack.java
 +++ b/src/main/java/net/minecraft/world/item/ItemStack.java
-@@ -80,1 +80,5 @@
- import org.slf4j.Logger;
-+// NeoForge start - injected interfaces
+@@ -95,1 +95,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IItemStackExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/level/block/Block.java
 +++ b/src/main/java/net/minecraft/world/level/block/Block.java
-@@ -50,1 +50,5 @@
- import org.jetbrains.annotations.Nullable;
-+// NeoForge start
+@@ -61,1 +61,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IBlockExtension;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockState.java b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/state/BlockState.java
-+++ b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
-@@ -20,1 +20,5 @@
- import org.jetbrains.annotations.Nullable;
-+// NeoForge start
-+import net.neoforged.neoforge.common.extensions.IBlockStateExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
@@ -77,16 +68,16 @@ index 0000000000000000000000000000000000000000..00000000000000000000000000000000
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -150,1 +150,5 @@
  import org.slf4j.Logger;
-+// NeoForge start
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.ILevelExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -170,1 +170,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
+@@ -181,1 +181,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IServerLevelExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java
@@ -95,61 +86,34 @@ index 0000000000000000000000000000000000000000..00000000000000000000000000000000
 +++ b/src/main/java/net/minecraft/world/level/block/entity/BlockEntity.java
 @@ -20,1 +20,5 @@
  import org.slf4j.Logger;
-+// NeoForge start
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IBlockEntityExtension;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/BlockEntityType.java b/src/main/java/net/minecraft/world/level/block/BlockEntityType.java
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/BlockEntityType.java b/src/main/java/net/minecraft/world/level/block/entity/BlockEntityType.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/BlockEntityType.java
-+++ b/src/main/java/net/minecraft/world/level/block/BlockEntityType.java
+--- a/src/main/java/net/minecraft/world/level/block/entity/BlockEntityType.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/BlockEntityType.java
 @@ -20,1 +20,5 @@
  import org.slf4j.Logger;
-+// NeoForge start
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IBlockEntityTypeExtension;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/Item.java b/src/main/java/net/minecraft/world/item/Item.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/Item.java
-+++ b/src/main/java/net/minecraft/world/item/Item.java
-@@ -120,1 +120,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
-+import net.neoforged.neoforge.common.extensions.IItemExtension;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-+++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-@@ -30,1 +30,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
-+import net.neoforged.neoforge.common.extensions.IMenuExtension;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/RecipeManager.java b/src/main/java/net/minecraft/world/item/RecipeManager.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/RecipeManager.java
-+++ b/src/main/java/net/minecraft/world/item/RecipeManager.java
-@@ -20,1 +20,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
-+import net.neoforged.neoforge.common.extensions.IRecipeManagerExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -100,1 +100,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
+@@ -110,1 +110,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IPlayerListExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-@@ -80,1 +80,5 @@
- import org.slf4j.Logger;
-+// NeoForge start
+@@ -83,1 +83,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IServerChunkCacheExtension;
 +// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/level/biome/Biome.java b/src/main/java/net/minecraft/world/level/biome/Biome.java
@@ -157,25 +121,16 @@ index 0000000000000000000000000000000000000000..00000000000000000000000000000000
 --- a/src/main/java/net/minecraft/world/level/biome/Biome.java
 +++ b/src/main/java/net/minecraft/world/level/biome/Biome.java
 @@ -40,1 +40,5 @@
- import net.minecraft.world.level.levelgen.GenerationStep;
-+// NeoForge start
+ import org.slf4j.Logger;
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IBiomeExtension;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/ChunkGenerator.java
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/ChunkGenerator.java
-+++ b/src/main/java/net/minecraft/world/level/ChunkGenerator.java
-@@ -30,1 +30,5 @@
- import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
-+// NeoForge start
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
+@@ -33,1 +33,5 @@
+ // NeoForge end
++// NeoForge start - injected interface
 +import net.neoforged.neoforge.common.extensions.IChunkGeneratorExtension;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/BlockItem.java b/src/main/java/net/minecraft/world/item/BlockItem.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/BlockItem.java
-+++ b/src/main/java/net/minecraft/world/item/BlockItem.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.level.block.state.BlockState;
-+// NeoForge start
-+import net.neoforged.neoforge.common.extensions.IBlockItemExtension;
 +// NeoForge end

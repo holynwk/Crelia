@@ -7,30 +7,12 @@ Subject: [PATCH] NeoForge LanguageHook, Difficulty, Resource Reload and
 Injects NeoForge hooks for resource reload, creative tab contents, and
 enchantment level overrides. Method body hooks deferred to build phase.
 
-diff --git a/src/main/java/net/minecraft/server/ServerResources.java b/src/main/java/net/minecraft/server/ServerResources.java
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/ServerResources.java
-+++ b/src/main/java/net/minecraft/server/ServerResources.java
-@@ -30,1 +30,4 @@
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -105,1 +105,4 @@
  import org.slf4j.Logger;
-+// NeoForge start - resource reload hooks
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/CreativeModeTab.java b/src/main/java/net/minecraft/world/item/CreativeModeTab.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/CreativeModeTab.java
-+++ b/src/main/java/net/minecraft/world/item/CreativeModeTab.java
-@@ -60,1 +60,4 @@
- import org.slf4j.Logger;
-+// NeoForge start
++// NeoForge start - difficulty change hooks
 +import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/Item.java b/src/main/java/net/minecraft/world/item/Item.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/Item.java
-+++ b/src/main/java/net/minecraft/world/item/Item.java
-@@ -120,1 +120,4 @@
- import org.slf4j.Logger;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end

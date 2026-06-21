@@ -5,54 +5,16 @@ Subject: [PATCH] NeoForge Entity Mount, Travel, Section Change, and Conversion
  Hooks
 
 Injects NeoForge hooks for entity mounting, dimension travel, section
-changes, mob conversion, enderman teleport, enderpearl landing, and
-teleport commands. Method body hooks deferred to build phase.
+changes, mob conversion, and enderpearl landing. Method body hooks
+deferred to build phase.
 
-diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/Entity.java
-+++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -180,1 +180,6 @@
- import org.slf4j.Logger;
-+// NeoForge start - entity hooks
-+import net.neoforged.neoforge.event.EventHooks;
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java b/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/ZombieVillager.java
-@@ -25,1 +25,6 @@
- import net.minecraft.world.level.Level;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/animal/Pig.java b/src/main/java/net/minecraft/world/entity/animal/Pig.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/animal/Pig.java
-+++ b/src/main/java/net/minecraft/world/entity/animal/Pig.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.level.Level;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java b/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java
-+++ b/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.level.Level;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
-@@ -30,1 +30,6 @@
- import net.minecraft.world.level.pathfinder.PathFinder;
-+// NeoForge start
+@@ -28,1 +28,6 @@
+ import org.slf4j.Logger;
++// NeoForge start - mob conversion hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
@@ -60,17 +22,17 @@ diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpear
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.phys.HitResult;
-+// NeoForge start
+@@ -22,1 +22,5 @@
+ import org.slf4j.Logger;
++// NeoForge start - enderpearl landing hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/commands/TeleportCommand.java b/src/main/java/net/minecraft/commands/TeleportCommand.java
+diff --git a/src/main/java/net/minecraft/server/commands/TeleportCommand.java b/src/main/java/net/minecraft/server/commands/TeleportCommand.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/commands/TeleportCommand.java
-+++ b/src/main/java/net/minecraft/commands/TeleportCommand.java
+--- a/src/main/java/net/minecraft/server/commands/TeleportCommand.java
++++ b/src/main/java/net/minecraft/server/commands/TeleportCommand.java
 @@ -30,1 +30,5 @@
- import net.minecraft.world.phys.Vec3;
-+// NeoForge start
+ import org.slf4j.Logger;
++// NeoForge start - teleport hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end

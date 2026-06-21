@@ -8,16 +8,6 @@ Chunk events fire on the appropriate region thread. Server tick hooks
 adapted for Folia's region threading model. Method body hooks deferred
 to build phase.
 
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -100,1 +100,6 @@
- import org.slf4j.Logger;
-+// NeoForge start - server lifecycle and tick hooks
-+import net.neoforged.neoforge.event.EventHooks;
-+import net.neoforged.neoforge.server.ServerLifecycleHooks;
-+// NeoForge end
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
@@ -25,14 +15,5 @@ index 0000000000000000000000000000000000000000..00000000000000000000000000000000
 @@ -80,1 +80,5 @@
  import org.slf4j.Logger;
 +// NeoForge start - chunk event hooks
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
-+++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-@@ -60,1 +60,5 @@
- import org.slf4j.Logger;
-+// NeoForge start - chunk ticket hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end

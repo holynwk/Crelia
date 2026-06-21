@@ -4,125 +4,70 @@ Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Crop, Loot, Attribute, Crafting, and Entity Capability
  Hooks
 
-Injects NeoForge hooks for crop growth, loot modification, attribute
-modification, entity capabilities, mob events, player events, and game
-events. Method body hooks deferred to build phase.
+Injects NeoForge hooks for piston events, entity capabilities, mob events,
+player events, and game events. Method body hooks deferred to build phase.
 
-diff --git a/src/main/java/net/minecraft/world/level/block/CropBlock.java b/src/main/java/net/minecraft/world/level/block/CropBlock.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/CropBlock.java
-+++ b/src/main/java/net/minecraft/world/level/block/CropBlock.java
-@@ -25,1 +25,5 @@
- import net.minecraft.world.level.block.state.BlockState;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/StemBlock.java b/src/main/java/net/minecraft/world/level/block/StemBlock.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/StemBlock.java
-+++ b/src/main/java/net/minecraft/world/level/block/StemBlock.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.phys.shapes.VoxelShape;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java b/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
-+++ b/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
-@@ -15,1 +15,5 @@
- import net.minecraft.world.level.LevelReader;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
 diff --git a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
 --- a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -25,1 +25,5 @@
- import net.minecraft.world.level.block.state.BlockState;
-+// NeoForge start
+ import org.slf4j.Logger;
++// NeoForge start - piston event hooks
 +import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java b/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java
-+++ b/src/main/java/net/minecraft/world/level/block/entity/portal/PortalForcer.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.phys.Vec3;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockState.java b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/state/BlockState.java
-+++ b/src/main/java/net/minecraft/world/level/block/state/BlockState.java
-@@ -30,1 +30,5 @@
- import net.minecraft.world.phys.shapes.VoxelShape;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -30,1 +30,6 @@
- import net.minecraft.world.level.pathfinder.PathFinder;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/animal/Animal.java b/src/main/java/net/minecraft/world/entity/animal/Animal.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/animal/Animal.java
-+++ b/src/main/java/net/minecraft/world/entity/animal/Animal.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.level.Level;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/entity/monster/Slime.java b/src/main/java/net/minecraft/world/entity/monster/Slime.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/entity/monster/Slime.java
-+++ b/src/main/java/net/minecraft/world/entity/monster/Slime.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.level.Level;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/item/crafting/LootTable.java b/src/main/java/net/minecraft/world/item/crafting/LootTable.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/item/crafting/LootTable.java
-+++ b/src/main/java/net/minecraft/world/item/crafting/LootTable.java
-@@ -20,1 +20,5 @@
  import org.slf4j.Logger;
-+// NeoForge start
++// NeoForge start - entity capability hooks
++import net.neoforged.neoforge.event.EventHooks;
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java b/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java
-+++ b/src/main/java/net/minecraft/world/level/saveddata/OverworldData.java
-@@ -20,1 +20,5 @@
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -107,1 +107,4 @@
+ // NeoForge end
++// NeoForge start - game event and entity hooks
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -178,1 +178,4 @@
+ // NeoForge end
++// NeoForge start - game event and loot hooks
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -92,1 +92,4 @@
+ import net.neoforged.neoforge.event.EventHooks; // NeoForge
++// NeoForge start - capability and crafting hooks
++import net.neoforged.neoforge.common.CommonHooks;
++// NeoForge end
+diff --git a/src/main/java/net/minecraft/world/entity/EntityType.java b/src/main/java/net/minecraft/world/entity/EntityType.java
+index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityType.java
++++ b/src/main/java/net/minecraft/world/entity/EntityType.java
+@@ -60,1 +60,5 @@
  import org.slf4j.Logger;
-+// NeoForge start
++// NeoForge start - entity type hooks
 +import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java b/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java
-+++ b/src/main/java/net/minecraft/world/level/block/LiquidBlockContainer.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.phys.Vec3;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/server/level/ServerEntity.java
-+++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
-@@ -20,1 +20,5 @@
- import net.minecraft.world.phys.Vec3;
-+// NeoForge start
-+import net.neoforged.neoforge.event.EventHooks;
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
+@@ -30,1 +30,5 @@
+ import org.slf4j.Logger;
++// NeoForge start - chunk generation hooks
++import net.neoforged.neoforge.common.CommonHooks;
 +// NeoForge end

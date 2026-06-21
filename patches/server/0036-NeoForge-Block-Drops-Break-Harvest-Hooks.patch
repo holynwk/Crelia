@@ -3,24 +3,15 @@ From: Crelia <crelia@users.noreply.github.com>
 Date: Mon, 1 Jan 2024 00:00:00 +0000
 Subject: [PATCH] NeoForge Block Drops, Block Break, and Harvest Hooks
 
-Injects NeoForge hooks for block breaking, drops, harvest checks, and
-crafting/smelting events. Method body hooks deferred to build phase.
+Injects NeoForge hooks for block breaking, drops, and harvest checks.
+Method body hooks deferred to build phase.
 
-diff --git a/src/main/java/net/minecraft/world/inventory/ResultSlot.java b/src/main/java/net/minecraft/world/inventory/ResultSlot.java
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
 index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/inventory/ResultSlot.java
-+++ b/src/main/java/net/minecraft/world/inventory/ResultSlot.java
-@@ -15,1 +15,5 @@
- import net.minecraft.world.item.ItemStack;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
-+// NeoForge end
-diff --git a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-+++ b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
-@@ -60,1 +60,5 @@
- import net.minecraft.world.level.block.state.BlockState;
-+// NeoForge start
-+import net.neoforged.neoforge.common.CommonHooks;
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -58,1 +58,5 @@
+ // NeoForge end
++// NeoForge start - block drops and break hooks
++import net.neoforged.neoforge.event.EventHooks;
 +// NeoForge end
